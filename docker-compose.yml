@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  gene-forge-analyzer:
+    container_name: gene-forge-analyzer
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        - NODE_ENV=production
+    ports:
+      - "5173:5173"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5173/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    read_only: true
+    tmpfs:
+      - /tmp
+    networks:
+      - gene-forge-network
+    labels:
+      - "com.gene-forge.description=Gene Forge DNA Analysis Tool"
+      - "com.gene-forge.version=1.0.0"
+    # Optional volumes for development (uncomment to use):
+    # volumes:
+    #   - .:/app
+    #   - /app/node_modules
+    #   - /app/dist
+
+networks:
+  gene-forge-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
