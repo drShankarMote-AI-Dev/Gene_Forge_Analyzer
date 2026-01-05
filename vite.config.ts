@@ -13,6 +13,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    allowedHosts: ["gene-forge-analyzer.onrender.com"],
   },
   plugins: [
     react(),
