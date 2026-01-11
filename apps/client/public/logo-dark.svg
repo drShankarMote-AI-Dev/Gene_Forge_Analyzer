@@ -1,0 +1,42 @@
+<svg width="500" height="150" viewBox="0 0 500 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <linearGradient id="gearGardDark" x1="40" y1="40" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#F8FAFC"/>
+            <stop offset="100%" stop-color="#94A3B8"/>
+        </linearGradient>
+        <linearGradient id="dnaGreenDark" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#4ADE80"/>
+            <stop offset="100%" stop-color="#22C55E"/>
+        </linearGradient>
+        <linearGradient id="dnaBlueDark" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#38BDF8"/>
+            <stop offset="100%" stop-color="#0EA5E9"/>
+        </linearGradient>
+        <filter id="neonGlow" x="-20%" y="-20%" width="150%" height="150%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
+            <feMerge>
+                <feMergeNode in="blur"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+    </defs>
+
+    <!-- Content Wrapper with Padding to prevent clipping -->
+    <g transform="translate(15, 15)">
+        <!-- Master Icon Group (Recalibrated for Visibility) -->
+        <g transform="scale(1.2)" filter="url(#neonGlow)">
+            <path d="M45 25L50 15L60 15L65 25L75 22L82 30L77 38L85 45L85 55L77 62L82 70L75 78L65 75L60 85L50 85L45 75L35 78L28 70L33 62L25 55L25 45L33 38L28 30L35 22L45 25Z" fill="url(#gearGardDark)"/>
+            <circle cx="55" cy="50" r="10" fill="#0F172A"/>
+            <path d="M40 20C40 20 75 40 75 60C75 80 40 100 40 100" stroke="url(#dnaGreenDark)" stroke-width="12" stroke-linecap="round"/>
+            <path d="M70 20C70 20 35 40 35 60C35 80 70 100 70 100" stroke="url(#dnaBlueDark)" stroke-width="12" stroke-linecap="round"/>
+            <line x1="48" y1="35" x2="62" y2="42" stroke="#FACC15" stroke-width="5" stroke-linecap="round"/>
+            <line x1="42" y1="60" x2="68" y2="60" stroke="#F87171" stroke-width="5" stroke-linecap="round"/>
+            <line x1="48" y1="85" x2="62" y2="78" stroke="#E879F9" stroke-width="5" stroke-linecap="round"/>
+        </g>
+
+        <!-- Bold Brand Text (Repositioned for safe margins) -->
+        <text x="130" y="70" font-family="Inter, system-ui, sans-serif" font-weight="900" font-size="72" fill="#4ADE80" letter-spacing="-0.04em" filter="url(#neonGlow)">Gene</text>
+        <text x="290" y="70" font-family="Inter, system-ui, sans-serif" font-weight="900" font-size="72" fill="#38BDF8" letter-spacing="-0.04em" filter="url(#neonGlow)">Forge</text>
+        <text x="135" y="105" font-family="Inter, system-ui, sans-serif" font-weight="800" font-size="24" fill="#FFFFFF" opacity="0.9" letter-spacing="0.45em">ANALYZER</text>
+    </g>
+</svg>

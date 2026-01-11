@@ -27,7 +27,7 @@ git commit -m "Initial commit: Gene Forge Analyzer v1.0.0"
 
 ### 2. Add Remote & Push
 ```powershell
-git remote add origin https://github.com/YOUR_USERNAME/gene-forge-analyzer.git
+git remote add origin https://github.com/drShankarMote-AI-Dev/Gene_Forge_Analyzer.git
 git branch -M main
 git push -u origin main
 ```
@@ -66,8 +66,8 @@ http://localhost:5173
 
 ## 📋 Pre-Push Checklist
 
-- [x] Update GitHub URLs in package.json (YOUR_USERNAME)
-- [x] Replace yourusername in README.md
+- [x] Update GitHub URLs in package.json
+- [x] Replace placeholders in README.md
 - [x] Create GitHub repo at https://github.com/new
 - [x] npm install - completed
 - [x] npm run lint - 0 errors
@@ -85,14 +85,14 @@ http://localhost:5173
 | `docker-compose.yml` | Docker Compose setup |
 | `.github/workflows/build.yml` | GitHub Actions CI/CD |
 | `README.md` | Project documentation |
-| `FINAL_STATUS.md` | Complete status report |
+| `README.md` | Project documentation |
 
 ---
 
 ## 📚 Documentation
 
 ### Essential Reading
-1. **FINAL_STATUS.md** - Complete deployment guide
+1. **README.md** - Complete project guide
 2. **GITHUB_SETUP.md** - GitHub publication steps
 3. **DOCKER.md** - Docker instructions
 
@@ -155,7 +155,7 @@ Your Gene Forge Analyzer is **production-ready**.
 2. **Build Docker image** when Docker is available
 3. **Deploy** to production
 
-For detailed instructions, see [FINAL_STATUS.md](FINAL_STATUS.md)
+For detailed instructions, see [README.md](README.md)
 
 ---
 

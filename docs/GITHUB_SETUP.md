@@ -20,14 +20,14 @@ The following fields in `package.json` have been updated:
 
 **Update these placeholders:**
 ```json
-"author": "Your Name <your.email@example.com>",
+"author": "Dr. Shankar Mote",
 "repository": {
   "type": "git",
-  "url": "https://github.com/YOUR_USERNAME/gene-forge-analyzer.git"
+  "url": "https://github.com/drShankarMote-AI-Dev/Gene_Forge_Analyzer.git"
 },
-"homepage": "https://github.com/YOUR_USERNAME/gene-forge-analyzer",
+"homepage": "https://github.com/drShankarMote-AI-Dev/Gene_Forge_Analyzer#readme",
 "bugs": {
-  "url": "https://github.com/YOUR_USERNAME/gene-forge-analyzer/issues"
+  "url": "https://github.com/drShankarMote-AI-Dev/Gene_Forge_Analyzer/issues"
 }
 ```
 
@@ -86,8 +86,8 @@ git commit -m "Initial commit: Gene Forge Analyzer v1.0.0
 - Includes Docker configuration
 - MIT License"
 
-# Add remote origin (replace YOUR_USERNAME)
-git remote add origin https://github.com/YOUR_USERNAME/gene-forge-analyzer.git
+# Add remote origin
+git remote add origin https://github.com/drShankarMote-AI-Dev/Gene_Forge_Analyzer.git
 
 # Rename branch to main if needed
 git branch -M main
@@ -225,7 +225,7 @@ Generate SSH key:
 ```bash
 ssh-keygen -t ed25519 -C "your_email@example.com"
 # Add to GitHub Settings → SSH and GPG keys
-git remote set-url origin git@github.com:YOUR_USERNAME/gene-forge-analyzer.git
+git remote set-url origin git@github.com:drShankarMote-AI-Dev/Gene_Forge_Analyzer.git
 ```
 
 ### Branches Don't Match

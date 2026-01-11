@@ -4,11 +4,14 @@ FROM node:20-alpine AS builder
 # Set working directory
 WORKDIR /app
 
-# Copy package files
+# Copy root package files
 COPY package*.json ./
 
-# Install all dependencies (including dev) for building
-RUN npm ci && npm cache clean --force
+# Copy workspace package files (only package.json to avoid lockfile conflicts)
+COPY apps/client/package.json ./apps/client/
+
+# Install all dependencies
+RUN npm install && npm cache clean --force
 
 # Copy source code
 COPY . .
@@ -28,7 +31,7 @@ RUN npm install -g serve && npm cache clean --force && \
 WORKDIR /app
 
 # Copy built application from builder stage
-COPY --from=builder --chown=nextjs:nodejs /app/dist ./dist
+COPY --from=builder --chown=nextjs:nodejs /app/apps/client/dist ./dist
 
 # Switch to non-root user
 USER nextjs

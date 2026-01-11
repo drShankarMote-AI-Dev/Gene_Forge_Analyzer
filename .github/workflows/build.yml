@@ -34,9 +34,9 @@ jobs:
 
     - name: Check build output
       run: |
-        if [ -d "dist" ]; then
+        if [ -d "apps/client/dist" ]; then
           echo "✓ Build successful - dist folder created"
-          du -sh dist/
+          du -sh apps/client/dist/
         else
           echo "✗ Build failed - no dist folder"
           exit 1
@@ -46,7 +46,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: dist-${{ matrix.node-version }}
-        path: dist/
+        path: apps/client/dist/
         retention-days: 5
 
   security:

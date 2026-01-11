@@ -1,0 +1,17 @@
+flask
+flask-cors
+flask-jwt-extended
+flask-limiter
+flask-sqlalchemy
+python-dotenv
+bcrypt
+authlib
+requests
+pycryptodome
+google-generativeai
+flask-socketio
+eventlet
+google-auth
+gunicorn
+flask-mail
+openai

@@ -1,13 +1,13 @@
 # 🧬 Gene Forge Analyzer
 
-[![Build Status](https://github.com/yourusername/gene-forge-analyzer/workflows/Build%20and%20Test/badge.svg)](https://github.com/yourusername/gene-forge-analyzer/actions)
+[![Build Status](https://github.com/drShankarMote-AI-Dev/Gene_Forge_Analyzer/workflows/Build%20and%20Test/badge.svg)](https://github.com/drShankarMote-AI-Dev/Gene_Forge_Analyzer/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node Version](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen)](https://nodejs.org/)
+[![Node Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
 [![React](https://img.shields.io/badge/react-18+-blue)](https://reactjs.org/)
-[![TypeScript](https://img.shields.io/badge/typescript-5+-blue)](https://www.typescriptlang.org/)
+[![Python](https://img.shields.io/badge/python-3.9+-blue)](https://python.org/)
 [![Docker](https://img.shields.io/badge/docker-ready-blue)](https://www.docker.com/)
 
-> **A comprehensive, production-ready DNA sequence analysis platform** designed for biologists, researchers, and students. Analyze genetic sequences with professional-grade tools for CRISPR detection, primer design, SNP detection, amino acid translation, and much more.
+> **A comprehensive, production-ready DNA sequence analysis platform** designed for biologists, researchers, and students. Analyze genetic sequences with professional-grade tools, collaborate securely in real-time, and leverage AI-driven insights.
 
 ---
 
@@ -29,21 +29,26 @@
 
 ## 🌟 Features
 
-✨ **Core Features:**
-- 🧪 **Sequence Analysis** - Analyze DNA and RNA sequences with detailed statistics
-- 📊 **Base Count Analysis** - Count nucleotide frequencies with visual charts
-- 📈 **GC Content Analysis** - Calculate GC content and display comprehensive statistics
-- 🔄 **Reading Frames** - Identify all 6 reading frames instantly
-- 🧬 **Amino Acid Translation** - Convert DNA sequences to amino acids with codon tables
-- 🔙 **Reverse Complement** - Generate reverse complement sequences
-- ✂️ **CRISPR Finder** - Detect CRISPR/Cas9 target sites (NGG PAM)
-- 🔍 **Restriction Sites** - Find restriction enzyme cut sites across sequences
-- 🎯 **Primer Designer** - Design optimized primers for PCR experiments
-- 🎨 **Motif Search** - Search for specific DNA motifs and patterns
-- 🔬 **SNP Detection** - Identify single nucleotide polymorphisms
-- 📋 **Sequence Comparator** - Compare multiple DNA sequences side-by-side
-- 🌙 **Dark Mode** - Toggle between light and dark themes
-- 📥 **Export Reports** - Generate analysis reports in multiple formats
+### 🔬 Core Analysis Tools
+- 🧪 **Sequence Analysis** - Comprehensive base composition stats.
+- 📊 **GC Content Analysis** - Sliding window distribution charts.
+- ✂️ **CRISPR & Restriction Sites** - Detect PAM sites and enzymatic cleavage points.
+- 🎯 **Primer Designer** - Optimize PCR primers with Tm calculation.
+- 🧬 **Translation & Alignment** - Amino acid conversion and sequence mutation inspection.
+- 🎨 **Motif Search** - High-speed pattern matching.
+
+### 🛡️ Security & Enterprise
+- 🔐 **Multi-Factor Authentication** - Secure login via Google OAuth 2.0 and Email OTP.
+- 👮 **Role-Based Access Control (RBAC)** - Dedicated Admin Dashboard for system monitoring.
+- 🔒 **End-to-End Encryption** - Secure data transmission and AES-256-GCM storage.
+- 📜 **Audit Logging** - Complete trail of potentially sensitive user actions.
+- ⚖️ **Compliance Ready** - GDPR-compliant data purging and rigorous security policies.
+
+### 🤝 Collaboration & AI
+- 💬 **Secure Chat** - Real-time, encrypted collaborative workspace for research teams.
+- 🤖 **AI Assistant** - "Biological Intelligence" engine offering explanations in Student or Researcher modes.
+- 📁 **Project Management** - Save analysis sessions, manage version history, and restore snapshots.
+- 🖥️ **Screen Share** - Integrated collaboration tools (WebRTC ready).
 
 ---
 
@@ -51,41 +56,61 @@
 
 | Requirement | Version |
 |------------|---------|
-| **Node.js** | >= 16.0.0 |
-| **npm** | >= 8.0.0 |
+| **Node.js** | >= 18.0.0 |
+| **Python** | >= 3.9 |
 | **Docker** | Latest (optional) |
 | **Modern Browser** | Chrome, Firefox, Safari, Edge |
 
-## 🚀 Quick Start
+## 🚀 Industrial Orchestration
 
-### Local Development (Fastest Way)
+Manage the entire laboratory environment from the root directory:
 
 ```bash
-# Step 1: Clone the repository
-git clone https://github.com/yourusername/gene-forge-analyzer.git
-cd gene-forge-analyzer
+# 1. Initialize complete research stack (Install dependencies everywhere)
+npm run install:all
 
-# Step 2: Install dependencies
-npm install
-
-# Step 3: Start development server
+# 2. Launch Local Analysis Engine + Dashboard (Concurrent)
 npm run dev
 
-# Step 4: Open in browser
-# Navigate to http://localhost:5173
+# 3. Launch Containerized Cluster
+npm run docker:up
+
+# 4. Emergency Port Cleanup (Windows)
+npm run clean:ports
 ```
 
-The application will automatically hot-reload as you make changes.
+## 🏗️ Monorepo Architecture
+
+- **`apps/client`**: High-fidelity React + Vite Research Dashboard. (Port 8080/5173)
+- **`apps/server`**: Python (Flask) Genomic Analysis Engine with AES-256-GCM. (Port 5000)
+- **`docker/`**: Centralized containerization manifests.
 
 ### Verify Installation
 
 ```bash
 # Test build
-npm run build
+npm run build -w apps/client
 
 # Check for linting issues
-npm run lint
+npm run lint -w apps/client
 ```
+
+---
+
+## 🔐 Security Configuration
+
+### 1. Identity Verification (Google OAuth)
+Create `.env` in `apps/client` and `apps/server` using the provided `.env.example` templates.
+- **Client**: `VITE_GOOGLE_CLIENT_ID` (Required for login)
+- **Server**: `GOOGLE_CLIENT_ID` (Required for token verification)
+
+### 2. Email Services (Optional)
+To enable production OTP delivery, configure SMTP in `apps/server/.env`:
+```ini
+EMAIL_USERNAME=your-email@gmail.com
+EMAIL_PASSWORD=your-app-password
+```
+*In development mode, OTP codes are automatically printed to the Flask server console for ease of testing.*
 
 ---
 
@@ -98,7 +123,7 @@ npm run lint
 docker build -t gene-forge-analyzer -f docker/Dockerfile .
 
 # Run container
-docker run -p 5173:5173 gene-forge-analyzer
+docker run -p 5173:5173 -p 5000:5000 gene-forge-analyzer
 
 # Access at http://localhost:5173
 ```
@@ -107,13 +132,7 @@ docker run -p 5173:5173 gene-forge-analyzer
 
 ```bash
 # Start the application
-docker-compose up -d
-
-# Stop the application
-docker-compose down
-
-# View real-time logs
-docker-compose logs -f
+npm run docker:up
 
 # Rebuild after changes
 docker-compose up -d --build
@@ -131,121 +150,62 @@ docker-compose up -d --build
 
 ```
 gene-forge-analyzer/
-├── src/                         # Source code
-│   ├── components/              # React components
-│   ├── pages/                   # Page components
-│   ├── utils/                   # Analysis utilities
-│   ├── hooks/                   # Custom hooks
-│   └── theme/                   # Theme configuration
-├── docker/
-│   └── Dockerfile               # Docker configuration
-├── scripts/                     # Build and utility scripts
-│   ├── build-docker.bat         # Windows build script
-│   └── build-docker.sh          # Linux/macOS build script
+├── apps/
+│   ├── client/                  # React Frontend
+│   │   ├── src/
+│   │   │   ├── components/      # UI & Logic Components
+│   │   │   ├── pages/           # Route Pages
+│   │   │   ├── hooks/           # Auth & Query Hooks
+│   │   │   └── utils/           # Analysis Helpers
+│   │   └── package.json
+│   └── server/                  # Flask Backend
+│       ├── app.py               # Main Application Entry
+│       ├── ai_engine.py         # AI Logic
+│       ├── encryption_utils.py  # Security Lib
+│       └── requirements.txt
+├── docker/                      # Docker Configs
 ├── docs/                        # Documentation
-│   ├── CONTRIBUTING.md          # Contribution guidelines
-│   ├── DOCKER.md                # Detailed Docker guide
-│   └── DEPLOYMENT.md            # Deployment guide
-├── tests/                       # Test suite
-├── .github/                     # CI/CD workflows
-├── public/                      # Static assets
-├── docker-compose.yml           # Docker Compose config
-├── package.json                 # Project dependencies
-├── vite.config.ts               # Vite configuration
-├── tsconfig.json                # TypeScript configuration
-└── README.md                    # Project overview
+├── package.json                 # Monorepo Scripts
+└── README.md                    # Project Overview
 ```
 
 ---
 
 ## 🛠️ Technologies Used
 
-- **Frontend Framework**: React 18
-- **Language**: TypeScript
-- **Build Tool**: Vite
-- **Styling**: Tailwind CSS
-- **UI Components**: Shadcn UI (Radix UI based)
-- **Routing**: React Router
-- **Forms**: React Hook Form
-- **State Management**: React Query
-- **Container**: Docker
-
-## 📦 Dependencies
-
-Key dependencies:
-- `react` - UI library
-- `typescript` - Type safety
-- `tailwindcss` - Utility-first CSS framework
-- `shadcn/ui` - High-quality UI components
-- `react-router-dom` - Client-side routing
-- `react-hook-form` - Efficient form handling
-- `@tanstack/react-query` - Server state management
-- `zod` - TypeScript-first schema validation
-- `sonner` - Toast notifications
-
-## 🧪 Usage Examples
-
-### Analyze a DNA Sequence
-
-1. Upload or paste a DNA sequence
-2. Select the analysis tools you need
-3. View results in real-time
-4. Export analysis report as PDF or JSON
-
-### Find CRISPR Sites
-
-1. Navigate to the Tools section
-2. Select CRISPR Finder
-3. Paste your sequence
-4. View detected NGG PAM sites and their locations
-
-### Design Primers
-
-1. Use the Primer Designer tool
-2. Input your target sequence
-3. Set primer parameters (length, Tm, etc.)
-4. Generate and export primer sequences
-
 ### Frontend Stack
-| Technology | Purpose | Version |
-|-----------|---------|---------|
-| **React** | UI framework | 18+ |
-| **TypeScript** | Type safety | 5+ |
-| **Vite** | Build tool | Latest |
-| **Tailwind CSS** | Styling | 3+ |
-| **Shadcn UI** | Component library | Latest |
-| **React Router** | Navigation | 6+ |
-| **React Hook Form** | Form management | Latest |
-| **React Query** | Server state | Latest |
-| **Zod** | Schema validation | Latest |
-| **Sonner** | Toast notifications | Latest |
+- **Framework**: React 18 + Vite
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS + Shadcn UI
+- **State**: React Query + Context API
+- **Real-time**: Socket.io-client
+- **Visualization**: Recharts
 
-### DevOps & Infrastructure
-- **Docker** - Containerization
-- **Docker Compose** - Orchestration
-- **GitHub Actions** - CI/CD
-- **Node.js** - Runtime
+### Backend Stack
+- **Framework**: Python Flask
+- **Database**: SQLite (Development) / PostgreSQL Ready
+- **Security**: PyCryptodome (AES-GCM), JWT
+- **Real-time**: Flask-SocketIO
+- **AI**: Custom NLP Heuristics (mockable for LLM integration)
 
 ---
 
-## 📦 Installation
+## 📦 Usage Examples
 
-We welcome contributions from the community! 
+### Analyze a DNA Sequence
+1. Upload `.fasta` file or paste sequence.
+2. View real-time base counts and GC content.
+3. Switch tabs to "Applied Genomics" for CRISPR/Primer tools.
 
-**Process:**
-1. **Fork** the repository
-2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
-3. **Make** your changes and commit (`git commit -m 'Add amazing feature'`)
-4. **Push** to your fork (`git push origin feature/amazing-feature`)
-5. **Open** a Pull Request with a clear description
+### Secure Collaboration
+1. Log in via Google or Email OTP.
+2. Open the "Secure Collaboration" floating widget.
+3. Share your current analysis context with the team in real-time.
 
-**Guidelines:**
-- Follow the existing code style
-- Add tests for new features
-- Update documentation
-- Keep commits clean and descriptive
-
-See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) for detailed guidelines.
+### Admin Monitoring
+1. Log in as Administrator.
+2. Navigate to`/admin/dashboard`.
+3. Monitor system health, user activity logs, and AI usage stats.
 
 ---
 
@@ -253,25 +213,22 @@ See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) for detailed guidelines.
 
 ### One-Click Deployments
 
-**Vercel (Recommended)**
+**Vercel (Frontend)**
 ```bash
-npm install -g vercel
+cd apps/client
 vercel
 ```
 
-**Netlify**
-```bash
-npm run build
-netlify deploy --prod --dir=dist
-```
+**Render/Railway (Backend)**
+Connect your repository and point to `apps/server` directory.
 
 **Docker Hub**
 ```bash
-docker build -t yourusername/gene-forge-analyzer .
-docker push yourusername/gene-forge-analyzer
+docker build -t drshankarmote-ai-dev/gene-forge-analyzer .
+docker push drshankarmote-ai-dev/gene-forge-analyzer
 ```
 
-For detailed deployment guides, see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
+For detailed deployment guides, see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 ---
 
@@ -279,29 +236,12 @@ For detailed deployment guides, see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
 
 This project is licensed under the **MIT License** - see [LICENSE](LICENSE) for details.
 
-### Usage Rights
-✅ Commercial use  
-✅ Modification  
-✅ Distribution  
-✅ Private use  
-❌ No warranty  
-❌ No liability
-
 ---
 
 ## 👨‍💻 Authors & Contributors
 
-- **Project Lead**: Your Name - [GitHub](https://github.com/yourusername)
+- **Project Lead**: Dr. Shankar Mote - [GitHub](https://github.com/drShankarMote-AI-Dev)
 - **Contributors**: See [CONTRIBUTING.md](CONTRIBUTING.md)
-
----
-
-## 🙏 Acknowledgments
-
-- Built with ❤️ using [Vite](https://vitejs.dev/)
-- UI Components from [Shadcn UI](https://ui.shadcn.com/) & [Radix UI](https://www.radix-ui.com/)
-- Inspired by modern bioinformatics tools
-- Thanks to the open-source community
 
 ---
 
@@ -309,66 +249,14 @@ This project is licensed under the **MIT License** - see [LICENSE](LICENSE) for 
 
 | Channel | Purpose |
 |---------|---------|
-| 🐛 [Issues](https://github.com/yourusername/gene-forge-analyzer/issues) | Bug reports & feature requests |
-| 💬 [Discussions](https://github.com/yourusername/gene-forge-analyzer/discussions) | Questions & ideas |
-| 📧 Email | your.email@example.com |
-| 📖 [Docs](./docs/DEPLOYMENT.md) | Detailed documentation |
-
----
-
-## 🌟 Showcase
-
-Check out what you can do with Gene Forge Analyzer:
-- ✅ Analyze complete genomes
-- ✅ Detect CRISPR targets for gene editing
-- ✅ Design PCR primers
-- ✅ Compare multiple sequences
-- ✅ Generate research reports
-
----
-
-## 🎯 Roadmap
-
-**v1.1** (Q1 2024)
-- [ ] Batch sequence processing
-- [ ] Advanced sequence alignment
-- [ ] Export to FASTA format
-
-**v1.2** (Q2 2024)
-- [ ] API integration for public databases
-- [ ] Sequence annotation tools
-- [ ] Collaborative workspace
-
-**v2.0** (Q3 2024)
-- [ ] Machine learning predictions
-- [ ] Real-time collaboration
-- [ ] Mobile app
+| 🐛 [Issues](https://github.com/drShankarMote-AI-Dev/Gene_Forge_Analyzer/issues) | Bug reports & feature requests |
+| 💬 [Discussions](https://github.com/drShankarMote-AI-Dev/Gene_Forge_Analyzer/discussions) | Questions & ideas |
+| 📧 Email | Use GitHub Issues for support |
 
 ---
 
 **Happy analyzing! 🧬**
 
-*Last updated: January 5, 2026*
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+*Last updated: January 2026*
 
-## What technologies are used for this project?
 
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/e6be6327-6923-4cdb-9afc-cc5813d3a745) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)

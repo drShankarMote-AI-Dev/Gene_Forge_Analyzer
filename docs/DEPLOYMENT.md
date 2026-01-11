@@ -110,17 +110,17 @@ export default defineConfig({
 docker login
 
 # Tag the image
-docker tag gene-forge-analyzer yourusername/gene-forge-analyzer:latest
-docker tag gene-forge-analyzer yourusername/gene-forge-analyzer:1.0.0
+docker tag gene-forge-analyzer drShankarMote-AI-Dev/gene-forge-analyzer:latest
+docker tag gene-forge-analyzer drShankarMote-AI-Dev/gene-forge-analyzer:1.0.0
 
 # Push to Docker Hub
-docker push yourusername/gene-forge-analyzer:latest
-docker push yourusername/gene-forge-analyzer:1.0.0
+docker push drShankarMote-AI-Dev/gene-forge-analyzer:latest
+docker push drShankarMote-AI-Dev/gene-forge-analyzer:1.0.0
 ```
 
 Then anyone can run:
 ```bash
-docker run -p 5173:5173 yourusername/gene-forge-analyzer
+docker run -p 5173:5173 drShankarMote-AI-Dev/Gene_Forge_Analyzer
 ```
 
 ### AWS Deployment
@@ -180,7 +180,7 @@ az appservice plan create --name gene-forge-plan --resource-group gene-forge-rg 
 az webapp create --resource-group gene-forge-rg --plan gene-forge-plan --name gene-forge-analyzer
 
 # Deploy
-az webapp deployment source config --resource-group gene-forge-rg --name gene-forge-analyzer --repo-url https://github.com/yourusername/gene-forge-analyzer --branch main --manual-integration
+az webapp deployment source config --resource-group gene-forge-rg --name gene-forge-analyzer --repo-url https://github.com/drShankarMote-AI-Dev/Gene_Forge_Analyzer --branch main --manual-integration
 ```
 
 ## Environment Variables

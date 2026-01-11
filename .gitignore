@@ -25,6 +25,7 @@ out
 # IDE and editor
 .vscode/*
 !.vscode/extensions.json
+!.vscode/settings.json
 .idea
 .DS_Store
 *.suo
@@ -52,7 +53,6 @@ yarn.lock
 Thumbs.db
 
 # IDE
-.vscode
 .idea
 *.iml
 *.iws
@@ -66,3 +66,36 @@ Thumbs.db
 *.bak
 *.swp
 .turbo
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Flask
+instance/
+.webassets-cache
+.env
+
+# Monorepo
+apps/server/instance
+apps/server/.env
+apps/client/.env
