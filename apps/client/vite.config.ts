@@ -17,6 +17,18 @@ export default defineConfig(({ mode }: ConfigEnv) => {
       host: "::",
       port: 8080,
       allowedHosts: [".vercel.app", "gene-forge-analyzer.vercel.app"],
+      proxy: {
+        '/api': {
+          target: env.VITE_API_URL || 'http://localhost:5000',
+          changeOrigin: true,
+          secure: false,
+        },
+        '/socket.io': {
+          target: env.VITE_SOCKET_URL || 'http://localhost:5000',
+          ws: true,
+          changeOrigin: true,
+        }
+      }
     },
     preview: {
       allowedHosts: [".vercel.app", "gene-forge-analyzer.vercel.app"],

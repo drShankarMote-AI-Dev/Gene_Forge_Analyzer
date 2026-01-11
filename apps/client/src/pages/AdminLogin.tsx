@@ -36,7 +36,7 @@ const AdminLogin = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+            const API_URL = '/api';
             await fetch(`${API_URL}/auth/admin/reset-password-request`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -55,7 +55,7 @@ const AdminLogin = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+            const API_URL = '/api';
             const res = await fetch(`${API_URL}/auth/admin/reset-password-confirm`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -78,7 +78,7 @@ const AdminLogin = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+            const API_URL = '/api';
             const res = await fetch(`${API_URL}/auth/admin/change-password`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

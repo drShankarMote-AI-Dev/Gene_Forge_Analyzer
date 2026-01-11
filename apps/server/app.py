@@ -55,7 +55,7 @@ jwt = JWTManager(app)
 mail = Mail(app)
 # Multi-origin CORS support for development and production
 frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:8080')
-allowed_origins = [frontend_url, "http://localhost:8080", "http://localhost:8081", "http://localhost:5173"]
+allowed_origins = [frontend_url, "http://localhost:8080", "http://localhost:8081", "http://localhost:5173", "http://localhost:3000"]
 
 socketio = SocketIO(app, cors_allowed_origins=allowed_origins, manage_session=False)
 CORS(app, supports_credentials=True, origins=allowed_origins)
@@ -155,8 +155,10 @@ def admin_reset_request():
         msg = Message("Admin Password Reset - Gene Forge", recipients=[email])
         msg.body = f"Your Admin Password Reset Code is: {reset_code}"
         mail.send(msg)
-    except:
-        pass # Log error
+    except Exception as e:
+        print(f"FAILED TO SEND ADMIN RESET: {e}")
+        # Still show code in console for dev
+        print(f"DEV ADMIN RESET CODE FOR {email}: {reset_code}")
         
     return jsonify({"msg": "If this is a valid admin email, a reset link has been sent."}), 200
 
@@ -899,9 +901,25 @@ if __name__ == '__main__':
     
     with app.app_context():
         db.create_all()
+        # Seed default admin if missing
+        admin_email = os.environ.get('ADMIN_EMAIL', 'admin@geneforge.com')
+        admin_pass = os.environ.get('ADMIN_PASSWORD', 'admin123')
+        admin = User.query.filter_by(role='admin').first()
+        if not admin:
+            print(f"SEeding default admin account: {admin_email}")
+            salt = os.urandom(16)
+            admin = User(
+                email=admin_email,
+                role='admin',
+                salt=salt,
+                password_hash=generate_password_hash(admin_pass)
+            )
+            db.session.add(admin)
+            db.session.commit()
     
     try:
         print(f"Initializing Analysis Engine on port {port}...")
+        print(f"CORS allowed origins: {allowed_origins}")
         # On Windows, we need allow_unsafe_werkzeug=True for SocketIO with debug
         socketio.run(app, host='0.0.0.0', port=port, debug=debug, allow_unsafe_werkzeug=True)
     except Exception as e:
