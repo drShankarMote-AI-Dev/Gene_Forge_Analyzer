@@ -1,11 +1,6 @@
 // ThemeProvider.tsx
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-
-// Create a context for theme
-const ThemeContext = createContext({
-  theme: 'light',
-  toggleTheme: () => {},
-});
+import React, { useEffect, useState, ReactNode } from 'react';
+import { ThemeContext } from './ThemeContext';
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setTheme] = useState<'light' | 'dark'>(
@@ -24,5 +19,3 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     </ThemeContext.Provider>
   );
 };
-
-export const useTheme = () => useContext(ThemeContext);

@@ -64,9 +64,31 @@ CORS(app, supports_credentials=True, origins=allowed_origins)
 limiter = Limiter(
     key_func=get_remote_address,
     app=app,
-    default_limits=["50 per day", "5 per minute"],
+    default_limits=["100 per day", "10 per minute"],
     storage_uri="memory://"
 )
+
+@app.before_request
+def log_request_info():
+    if app.debug:
+        app.logger.debug('Headers: %s', request.headers)
+        app.logger.debug('Body: %s', request.get_data())
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    # Log the error
+    import traceback
+    error_details = traceback.format_exc()
+    print(f"GLOBAL ERROR: {str(e)}")
+    # Write to a file for persistent debugging
+    with open("critical_errors.log", "a") as f:
+        f.write(f"[{datetime.datetime.utcnow().isoformat()}] {str(e)}\n{error_details}\n\n")
+    # Return JSON instead of HTML for any uncaught error
+    return jsonify({
+        "msg": "Internal Server Error", 
+        "error": str(e),
+        "trace": error_details if app.debug else None
+    }), 500
 
 # OAuth Setup
 google_client_id = os.environ.get('GOOGLE_CLIENT_ID')
@@ -95,37 +117,48 @@ class User(db.Model):
 
 from werkzeug.security import generate_password_hash, check_password_hash
 
-# ... (Previous code)
-
 @app.route('/api/auth/admin/login', methods=['POST'])
 @limiter.limit("5 per minute")
 def admin_login():
-    data = request.get_json()
-    email = data.get('email')
-    password = data.get('password')
-    
-    if not email or not password:
-        return jsonify({"msg": "Email and password required"}), 400
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"msg": "Missing JSON in request"}), 400
+        email = data.get('email')
+        password = data.get('password')
         
-    user = User.query.filter_by(email=email).first()
-    
-    if not user or user.role != 'admin' or not user.password_hash:
-        # Anti-timing attack (always check something)
-        check_password_hash('dummy', 'dummy')
-        log_action("ADMIN_LOGIN_FAIL", details=f"Failed attempt for {email}")
-        return jsonify({"msg": "Invalid admin credentials"}), 401
+        print(f"DEBUG: Admin Login Attempt for {email}")
         
-    if check_password_hash(user.password_hash, password):
-        access_token = create_access_token(identity=email)
-        refresh_token = create_refresh_token(identity=email)
-        resp = jsonify({"msg": "Admin Access Granted", "user": {"email": email, "role": "admin"}})
-        set_access_cookies(resp, access_token)
-        set_refresh_cookies(resp, refresh_token)
-        log_action("ADMIN_LOGIN_SUCCESS", user_id=user.id, details="Password Auth")
-        return resp, 200
-    else:
-        log_action("ADMIN_LOGIN_FAIL", user_id=user.id, details="Wrong Password")
-        return jsonify({"msg": "Invalid credentials"}), 401
+        if not email or not password:
+            return jsonify({"msg": "Email and password required"}), 400
+            
+        user = User.query.filter_by(email=email).first()
+        print(f"DEBUG: User found: {user.email if user else 'None'}")
+        
+        if not user or user.role != 'admin' or not user.password_hash:
+            print(f"DEBUG: Auth failed (User not admin or no pass hash)")
+            check_password_hash('dummy', 'dummy')
+            log_action("ADMIN_LOGIN_FAIL", details=f"Failed attempt for {email}")
+            return jsonify({"msg": "Invalid admin credentials"}), 401
+            
+        if check_password_hash(user.password_hash, password):
+            print(f"DEBUG: Password match success")
+            access_token = create_access_token(identity=email)
+            refresh_token = create_refresh_token(identity=email)
+            resp = jsonify({"msg": "Admin Access Granted", "user": {"email": email, "role": "admin"}})
+            set_access_cookies(resp, access_token)
+            set_refresh_cookies(resp, refresh_token)
+            log_action("ADMIN_LOGIN_SUCCESS", user_id=user.id, details="Password Auth")
+            return resp, 200
+        else:
+            print(f"DEBUG: Password match failed")
+            log_action("ADMIN_LOGIN_FAIL", user_id=user.id, details="Wrong Password")
+            return jsonify({"msg": "Invalid credentials"}), 401
+    except Exception as e:
+        import traceback
+        print(f"ERROR in admin_login: {e}")
+        traceback.print_exc()
+        raise e
 
 @app.route('/api/auth/admin/reset-password-request', methods=['POST'])
 def admin_reset_request():
@@ -238,6 +271,96 @@ def admin_system_stats():
         "logs": log_data
     }), 200
 
+@app.route('/api/admin/users', methods=['GET'])
+@jwt_required()
+def admin_get_users():
+    email = get_jwt_identity()
+    user = User.query.filter_by(email=email).first()
+    if not user or user.role != 'admin':
+        return jsonify({"msg": "Unauthorized"}), 403
+    
+    users = User.query.order_by(User.created_at.desc()).all()
+    user_data = [{
+        "id": u.id,
+        "email": u.email,
+        "role": u.role,
+        "created_at": u.created_at.isoformat() if u.created_at else None
+    } for u in users]
+    
+    return jsonify(user_data), 200
+
+@app.route('/api/admin/users/create', methods=['POST'])
+@jwt_required()
+def admin_create_user():
+    email = get_jwt_identity()
+    admin = User.query.filter_by(email=email).first()
+    if not admin or admin.role != 'admin':
+        return jsonify({"msg": "Unauthorized"}), 403
+        
+    data = request.get_json()
+    new_email = data.get('email')
+    new_role = data.get('role', 'user')
+    new_password = data.get('password') # Optional, if they want to give a password
+    
+    if not new_email:
+        return jsonify({"msg": "Email is required"}), 400
+        
+    existing = User.query.filter_by(email=new_email).first()
+    if existing:
+        return jsonify({"msg": "Personnel already registered in cluster"}), 400
+        
+    salt = os.urandom(16)
+    user = User(email=new_email, role=new_role, salt=salt)
+    if new_password:
+        user.password_hash = generate_password_hash(new_password)
+        
+    db.session.add(user)
+    db.session.commit()
+    
+    log_action("ADMIN_CREATED_USER", user_id=admin.id, details=f"Created {new_email} as {new_role}")
+    return jsonify({"msg": "Personnel successfully integrated into database", "user": {"email": new_email, "role": new_role}}), 201
+
+@app.route('/api/admin/logs', methods=['GET'])
+@jwt_required()
+def admin_get_logs():
+    email = get_jwt_identity()
+    user = User.query.filter_by(email=email).first()
+    if not user or user.role != 'admin':
+        return jsonify({"msg": "Unauthorized"}), 403
+    
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 50, type=int)
+    
+    # Simple pagination without using .paginate() if it's not available or to be safe
+    # But usually Flask-SQLAlchemy has it. Let's use it.
+    try:
+        logs_pagination = AuditLog.query.order_by(AuditLog.timestamp.desc()).paginate(page=page, per_page=per_page, error_out=False)
+        items = logs_pagination.items
+        total = logs_pagination.total
+        pages = logs_pagination.pages
+    except:
+        # Fallback if paginate fails
+        items = AuditLog.query.order_by(AuditLog.timestamp.desc()).offset((page-1)*per_page).limit(per_page).all()
+        total = AuditLog.query.count()
+        pages = (total // per_page) + (1 if total % per_page > 0 else 0)
+
+    log_data = [{
+        "id": l.id,
+        "action": l.action,
+        "details": l.details,
+        "ip": l.ip_address,
+        "timestamp": l.timestamp.isoformat(),
+        "user_email": User.query.get(l.user_id).email if l.user_id else "System"
+    } for l in items]
+    
+    return jsonify({
+        "logs": log_data,
+        "total": total,
+        "pages": pages,
+        "current_page": page
+    }), 200
+
+
 class GenomicData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -325,6 +448,14 @@ with app.app_context():
             print(f"Admin seeding error: {e}")
 
 # Routes
+@app.route('/', methods=['GET'])
+def root():
+    return jsonify({
+        "msg": "Welcome to Gene Forge API",
+        "status": "online",
+        "version": "1.0.0"
+    }), 200
+
 @app.route('/health', methods=['GET'])
 def health_check():
     return jsonify({
@@ -408,8 +539,14 @@ def send_otp():
         return jsonify(response_data), 200
     except Exception as e:
         db.session.rollback()
-        print(f"ERROR in send_otp: {str(e)}")
-        return jsonify({"msg": "Failed to generate OTP. Internal server error."}), 500
+        import traceback
+        error_details = traceback.format_exc()
+        print(f"CRITICAL ERROR in send_otp:\n{error_details}")
+        return jsonify({
+            "msg": "Failed to generate OTP. Internal server error.",
+            "error": str(e),
+            "trace": error_details if app.debug else None
+        }), 500
 
 @app.route('/api/auth/otp/verify', methods=['POST'])
 @limiter.limit("5 per minute")
@@ -858,7 +995,9 @@ def ai_explain_stream():
                 db.session.commit()
                 
         except Exception as e:
-            print(f"Stream Error: {e}")
+            import traceback
+            err_trace = traceback.format_exc()
+            print(f"CRITICAL STREAM ERROR: {e}\n{err_trace}")
             with app.app_context():
                 u = User.query.get(user.id)
                 usage = AIUsage(
@@ -868,9 +1007,17 @@ def ai_explain_stream():
                 )
                 db.session.add(usage)
                 db.session.commit()
-            yield f"\n[Error: Connection interrupted - {str(e)}]"
+            yield f"\n[Error: AI interpretation engine encountered a connectivity issue ({str(e)}). Please ensure your API keys are valid and quotas are not exceeded.]"
 
-    return Response(generate(), mimetype='text/plain')
+    return Response(
+        generate(), 
+        mimetype='text/event-stream',
+        headers={
+            'Cache-Control': 'no-cache',
+            'Transfer-Encoding': 'chunked',
+            'X-Accel-Buffering': 'no'
+        }
+    )
 
 # WebRTC Signaling for Screen Sharing
 @socketio.on('webrtc-offer')
@@ -891,12 +1038,12 @@ def handle_ice_candidate(data):
     if room:
         emit('webrtc-ice-candidate', data, room=room, include_self=False)
 
+@app.route('/api/auth/ping', methods=['GET'])
+def ping():
+    return jsonify({"msg": "pong"}), 200
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-
-    @app.route('/api/auth/ping', methods=['GET'])
-    def ping():
-        return jsonify({"msg": "pong"}), 200
     debug = os.environ.get('FLASK_DEBUG', 'True') == 'True'
     
     with app.app_context():

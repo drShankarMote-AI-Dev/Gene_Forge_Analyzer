@@ -13,15 +13,51 @@ class AIBioEngine:
     def __init__(self):
         # Primary Model: OpenAI
         self.openai_key = os.environ.get("OPENAI_API_KEY")
+        if self.openai_key and "your-" in self.openai_key:
+            print("WARNING: OpenAI API Key is a placeholder. OpenAI will be disabled.")
+            self.openai_key = None
+            
         self.openai_client = OpenAI(api_key=self.openai_key) if self.openai_key else None
         
         # Fallback Model: Gemini
         self.gemini_key = os.environ.get("GEMINI_API_KEY")
+        if self.gemini_key and "your-" in self.gemini_key:
+            print("WARNING: Gemini API Key is a placeholder. Gemini will be disabled.")
+            self.gemini_key = None
+
         if self.gemini_key:
             genai.configure(api_key=self.gemini_key)
             self.gemini_model = genai.GenerativeModel('gemini-1.5-pro')
         else:
             self.gemini_model = None
+
+    def generate_explanation(self, analysis_data, mode="researcher"):
+        """Non-streaming version for simpler integration."""
+        prompt = self._build_prompt(analysis_data, mode)
+        
+        # Try OpenAI
+        if self.openai_client:
+            try:
+                response = self.openai_client.chat.completions.create(
+                    model="gpt-4o",
+                    messages=[
+                        {"role": "system", "content": "You are an expert bioinformatician."},
+                        {"role": "user", "content": prompt}
+                    ]
+                )
+                return response.choices[0].message.content
+            except Exception as e:
+                print(f"AI GATEWAY: OpenAI Failure: {e}")
+
+        # Try Gemini
+        if self.gemini_model:
+            try:
+                response = self.gemini_model.generate_content(prompt)
+                return response.text
+            except Exception as e:
+                print(f"AI GATEWAY: Gemini Failure: {e}")
+
+        return "AI interpretation service is currently offline. Please verify API configuration in the secure terminal."
 
     def generate_explanation_stream(self, analysis_data, mode="researcher"):
         """
@@ -33,25 +69,29 @@ class AIBioEngine:
 
         # 1. Try Primary (OpenAI)
         if self.openai_client:
-            try:
-                print("AI GATEWAY: Routing to Primary Model (OpenAI GPT-4)...")
-                stream = self.openai_client.chat.completions.create(
-                    model="gpt-4o", # Using latest optimization
-                    messages=[
-                        {"role": "system", "content": "You are an expert bioinformatician."},
-                        {"role": "user", "content": prompt}
-                    ],
-                    stream=True
-                )
-                model_used = "openai-gpt-4o"
-                yield f"__MODEL_USED__:{model_used}\n" # Meta-header
-                
-                for chunk in stream:
-                    if chunk.choices[0].delta.content is not None:
-                        yield chunk.choices[0].delta.content
-                return # Success
-            except Exception as e:
-                print(f"AI GATEWAY: Primary Model Failed ({str(e)}). Switching to Fallback...")
+            models_to_try = ["gpt-4o", "gpt-4", "gpt-3.5-turbo"]
+            for model_name in models_to_try:
+                try:
+                    print(f"AI GATEWAY: Routing to Primary Model (OpenAI {model_name})...")
+                    stream = self.openai_client.chat.completions.create(
+                        model=model_name,
+                        messages=[
+                            {"role": "system", "content": "You are an expert bioinformatician."},
+                            {"role": "user", "content": prompt}
+                        ],
+                        stream=True
+                    )
+                    model_used = f"openai-{model_name}"
+                    yield f"__MODEL_USED__:{model_used}\n"
+                    
+                    for chunk in stream:
+                        if chunk.choices and chunk.choices[0].delta.content is not None:
+                            yield chunk.choices[0].delta.content
+                    return # Success
+                except Exception as e:
+                    print(f"AI GATEWAY: OpenAI {model_name} Failed: {str(e)}")
+                    if model_name == models_to_try[-1]: # If last one failed
+                         print("AI GATEWAY: All OpenAI models failed. Trying Gemini fallback...")
         
         # 2. Fallback (Gemini)
         if self.gemini_model:
@@ -59,21 +99,31 @@ class AIBioEngine:
                 print("AI GATEWAY: Routing to Fallback Model (Gemini 1.5)...")
                 response = self.gemini_model.generate_content(prompt, stream=True)
                 model_used = "google-gemini-1.5"
-                yield f"__MODEL_USED__:{model_used}\n" # Meta-header
+                yield f"__MODEL_USED__:{model_used}\n"
                 
                 for chunk in response:
-                    yield chunk.text
+                    try:
+                        if chunk.text:
+                            yield chunk.text
+                    except Exception as inner_e:
+                        print(f"AI GATEWAY: Gemini chunk error: {inner_e}")
+                        yield "\n[Signal Interrupted: Safety filters or connectivity issues detected]\n"
                 return # Success
             except Exception as e:
-                 print(f"AI GATEWAY: Fallback Model Failed ({str(e)}).")
+                 print(f"AI GATEWAY: Fallback Model Failed: {str(e)}")
         
-        yield "System Error: All AI models are currently unavailable. Please check configuration or try again later."
+        if not self.openai_client and not self.gemini_model:
+            yield "Critical: No AI models are configured. Please set OPENAI_API_KEY or GEMINI_API_KEY in the environment."
+        else:
+            yield "Neural Link Error: All AI models failed to respond. Check API quotas or connectivity."
 
     def _build_prompt(self, data, mode):
-        sequence = data.get('sequence', 'Unknown')
-        base_counts = data.get('base_counts', {})
-        gc_content = data.get('gc_content', 'Unknown')
-        crispr_guides = data.get('crispr_guides', [])
+        # Extract data with safe fallbacks
+        results = data if isinstance(data, dict) else {}
+        sequence = results.get('sequence', 'Unknown Sequence Data')
+        base_counts = results.get('base_counts', results.get('nucleotide_counts', {}))
+        gc_content = results.get('gc_content', 'Unknown')
+        crispr_guides = results.get('crispr_guides', results.get('crispr_targets', []))
         
         system_context = "You are an expert bioinformatician and molecular biologist."
         if mode == "student":
@@ -81,24 +131,22 @@ class AIBioEngine:
         else:
             system_context += " Provide deep technical insights and research-level analysis."
 
-        prompt = f"""
+        return f"""
         {system_context}
         
         Analyze the following genomic data:
-        - Sequence (first 100bp): {sequence[:100]}...
-        - Total Length: {len(sequence)} bp
+        - Sequence (sample): {sequence[:150]}... (Total Length: {len(sequence)} bp)
         - Nucleotide Composition: {base_counts}
         - Global GC Content: {gc_content}%
-        - CRISPR Candidate Guides Found: {len(crispr_guides)}
+        - CRISPR Candidates: {len(crispr_guides)} guides found
         
         Please provide a structured report including:
         1. **Executive Summary**: Brief overview of the sequence composition.
-        2. **Detailed Analysis**: Insights into the GC content and its biological implications (e.g., stability, genomic islands).
-        3. **CRISPR Risk Assessment**: Evaluation of the identified guide RNAs and potential off-target risks or efficiency.
-        4. **Research Recommendations**: Next steps for lab verification or optimization.
+        2. **Detailed Analysis**: Insights into the GC content and its biological implications.
+        3. **CRISPR Risk Assessment**: Evaluation of identified guides/targets.
+        4. **Research Recommendations**: Next steps for lab verification.
         
-        Format the output in clean Markdown for a research report. Do not include '```markdown' blocks, just raw markdown.
+        Format the output in clean Markdown for a research report. Avoid conversational filler.
         """
-        return prompt
 
 ai_bio_engine = AIBioEngine()

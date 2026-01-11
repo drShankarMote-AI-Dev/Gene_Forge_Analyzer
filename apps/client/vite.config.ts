@@ -10,7 +10,14 @@ const __dirname = dirname(__filename);
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }: ConfigEnv) => {
-  const env = loadEnv(mode, process.cwd(), '');
+  const rootDir = path.resolve(__dirname, "../../");
+  const env = loadEnv(mode, rootDir, "");
+  console.log("VITE CONFIG DEBUG: mode =", mode);
+  console.log("VITE CONFIG DEBUG: rootDir =", rootDir);
+  console.log("VITE CONFIG DEBUG: VITE_GOOGLE_CLIENT_ID exists =", !!env.VITE_GOOGLE_CLIENT_ID);
+  if (env.VITE_GOOGLE_CLIENT_ID) {
+    console.log("VITE CONFIG DEBUG: VITE_GOOGLE_CLIENT_ID prefix =", env.VITE_GOOGLE_CLIENT_ID.substring(0, 10));
+  }
 
   return {
     server: {
@@ -19,12 +26,12 @@ export default defineConfig(({ mode }: ConfigEnv) => {
       allowedHosts: [".vercel.app", "gene-forge-analyzer.vercel.app"],
       proxy: {
         '/api': {
-          target: env.VITE_API_URL || 'http://localhost:5000',
+          target: 'http://127.0.0.1:5000',
           changeOrigin: true,
           secure: false,
         },
         '/socket.io': {
-          target: env.VITE_SOCKET_URL || 'http://localhost:5000',
+          target: 'http://127.0.0.1:5000',
           ws: true,
           changeOrigin: true,
         }
@@ -56,7 +63,9 @@ export default defineConfig(({ mode }: ConfigEnv) => {
       chunkSizeWarningLimit: 1000,
     },
     define: {
-      'import.meta.env.VITE_API_URL': JSON.stringify(env.VITE_API_URL || 'http://localhost:5000/api')
+      'import.meta.env.VITE_API_URL': JSON.stringify(env.VITE_API_URL || '/api'),
+      'import.meta.env.VITE_GOOGLE_CLIENT_ID': JSON.stringify(env.VITE_GOOGLE_CLIENT_ID || ''),
+      'import.meta.env.VITE_APP_NAME': JSON.stringify(env.VITE_APP_NAME || 'Gene Forge Analyzer'),
     }
   };
 });

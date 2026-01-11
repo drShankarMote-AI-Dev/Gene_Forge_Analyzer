@@ -4,6 +4,7 @@ import { toast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
 
 const API_URL = '/api';
+console.log("DEBUG: useAuth Hook API_URL:", API_URL);
 
 interface User {
     email: string;
@@ -203,11 +204,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 credentials: 'include',
                 body: JSON.stringify({ email, password }),
             });
+            const contentType = resp.headers.get("content-type");
             if (!resp.ok) {
-                const err = await resp.json();
-                throw new Error(err.msg || 'Invalid admin credentials');
+                let errorMessage = 'Invalid admin credentials';
+                if (contentType && contentType.includes("application/json")) {
+                    const err = await resp.json();
+                    errorMessage = err.msg || errorMessage;
+                } else {
+                    const text = await resp.text();
+                    console.error("Non-JSON Error Response:", text);
+                    errorMessage = `Server Error: ${resp.status}`;
+                }
+                throw new Error(errorMessage);
             }
-            return resp.json();
+
+            if (contentType && contentType.includes("application/json")) {
+                return resp.json();
+            }
+            return { success: true };
         },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         onSuccess: (data: any) => {

@@ -7,7 +7,7 @@
 [![Python](https://img.shields.io/badge/python-3.9+-blue)](https://python.org/)
 [![Docker](https://img.shields.io/badge/docker-ready-blue)](https://www.docker.com/)
 
-> **A comprehensive, production-ready DNA sequence analysis platform** designed for biologists, researchers, and students. Analyze genetic sequences with professional-grade tools, collaborate securely in real-time, and leverage AI-driven insights.
+> **A comprehensive, production-ready DNA sequence analysis platform** designed for biologists, researchers, and students. Analyze genetic sequences with professional-grade tools, collaborate securely in real-time, and leverage AI-driven insights with a sleek, clinical-grade premium interface.
 
 ---
 
@@ -15,6 +15,7 @@
 
 - [Features](#-features)
 - [Quick Start](#-quick-start)
+- [Administrative Command Terminal](#-administrative-command-terminal)
 - [Project Structure](#-project-structure)
 - [Technologies](#-technologies-used)
 - [Installation](#-installation)
@@ -23,7 +24,6 @@
 - [Contributing](#-contributing)
 - [Deployment](#-deployment)
 - [License](#-license)
-- [Support](#-support)
 
 ---
 
@@ -31,102 +31,82 @@
 
 ### 🔬 Core Analysis Tools
 - 🧪 **Sequence Analysis** - Comprehensive base composition stats.
-- 📊 **GC Content Analysis** - Sliding window distribution charts.
+- 📊 **GC Content Analysis** - Sliding window distribution charts with Recharts.
 - ✂️ **CRISPR & Restriction Sites** - Detect PAM sites and enzymatic cleavage points.
 - 🎯 **Primer Designer** - Optimize PCR primers with Tm calculation.
 - 🧬 **Translation & Alignment** - Amino acid conversion and sequence mutation inspection.
 - 🎨 **Motif Search** - High-speed pattern matching.
 
-### 🛡️ Security & Enterprise
+### 🛡️ Security & Enterprise (Identity Orchestration)
 - 🔐 **Multi-Factor Authentication** - Secure login via Google OAuth 2.0 and Email OTP.
-- 👮 **Role-Based Access Control (RBAC)** - Dedicated Admin Dashboard for system monitoring.
+- 👷 **Role-Based Access Control (RBAC)** - Clear distinction between standard Users, Researchers, and Admins.
 - 🔒 **End-to-End Encryption** - Secure data transmission and AES-256-GCM storage.
-- 📜 **Audit Logging** - Complete trail of potentially sensitive user actions.
+- 📜 **Audit Logging** - Complete trail of forensic telemetry in a functional leaderboard view.
 - ⚖️ **Compliance Ready** - GDPR-compliant data purging and rigorous security policies.
 
 ### 🤝 Collaboration & AI
 - 💬 **Secure Chat** - Real-time, encrypted collaborative workspace for research teams.
 - 🤖 **AI Assistant** - "Biological Intelligence" engine offering explanations in Student or Researcher modes.
 - 📁 **Project Management** - Save analysis sessions, manage version history, and restore snapshots.
-- 🖥️ **Screen Share** - Integrated collaboration tools (WebRTC ready).
+- 🖥️ **AI Gateway** - Dedicated monitoring of neural health and API consumption.
 
 ---
 
-## 📋 System Requirements
+## 🚀 Quick Start
 
-| Requirement | Version |
-|------------|---------|
-| **Node.js** | >= 18.0.0 |
-| **Python** | >= 3.9 |
-| **Docker** | Latest (optional) |
-| **Modern Browser** | Chrome, Firefox, Safari, Edge |
-
-## 🚀 Industrial Orchestration
-
-Manage the entire laboratory environment from the root directory:
+Initialize the complete research stack from the root directory:
 
 ```bash
-# 1. Initialize complete research stack (Install dependencies everywhere)
+# 1. Initialize environment
 npm run install:all
 
 # 2. Launch Local Analysis Engine + Dashboard (Concurrent)
 npm run dev
 
-# 3. Launch Containerized Cluster
-npm run docker:up
-
-# 4. Emergency Port Cleanup (Windows)
-npm run clean:ports
-```
-
-## 🏗️ Monorepo Architecture
-
-- **`apps/client`**: High-fidelity React + Vite Research Dashboard. (Port 8080/5173)
-- **`apps/server`**: Python (Flask) Genomic Analysis Engine with AES-256-GCM. (Port 5000)
-- **`docker/`**: Centralized containerization manifests.
-
-### Verify Installation
-
-```bash
-# Test build
-npm run build -w apps/client
-
-# Check for linting issues
-npm run lint -w apps/client
+# 3. Establish Admin Access (CLI)
+python admin.py reset --email admin@geneforge.com --password admin
 ```
 
 ---
 
-## 🔐 Security Configuration
+## 🖥️ Administrative Command Terminal
 
-### 1. Identity Verification (Google OAuth)
-Create `.env` in `apps/client` and `apps/server` using the provided `.env.example` templates.
-- **Client**: `VITE_GOOGLE_CLIENT_ID` (Required for login)
-- **Server**: `GOOGLE_CLIENT_ID` (Required for token verification)
+The `admin.py` utility provides a unified interface for managing the laboratory cluster.
 
-### 2. Email Services (Optional)
-To enable production OTP delivery, configure SMTP in `apps/server/.env`:
-```ini
-EMAIL_USERNAME=your-email@gmail.com
-EMAIL_PASSWORD=your-app-password
-```
-*In development mode, OTP codes are automatically printed to the Flask server console for ease of testing.*
+| Command | Description |
+|---------|-------------|
+| `python admin.py status` | Monitor real-time telemetry, node counts, and neural health. |
+| `python admin.py list`   | Inventory all accounts with administrative permissions. |
+| `python admin.py reset`  | Securely reset credentials or create a new Admin node. |
+| `python admin.py fix`    | Synchronize and force role permissions for a node. |
+
+---
+
+## 🏗️ Monorepo Architecture
+
+- **`apps/client`**: High-fidelity React + Vite Research Dashboard. (Port 5173 / Proxy 8080)
+- **`apps/server`**: Python (Flask) Genomic Analysis Engine with AES-256-GCM. (Port 5000)
+- **`admin.py`**: Unified system management CLI.
+
+---
+
+## 🛠️ Technologies Used
+
+### Frontend Stack
+- **Framework**: React 18 + Vite
+- **Styling**: Tailwind CSS + Shadcn UI (Clinical Theme)
+- **State**: React Query + Context API
+- **Visualization**: Recharts
+
+### Backend Stack
+- **Framework**: Python Flask
+- **Database**: SQLite (Development) / PostgreSQL (Production)
+- **Security**: PyCryptodome (AES-GCM), JWT-Extended
+- **Real-time**: Flask-SocketIO
 
 ---
 
 ## 🐳 Docker Setup
-
-### Build and Run with Docker
-
-```bash
-# Build Docker image
-docker build -t gene-forge-analyzer -f docker/Dockerfile .
-
-# Run container
-docker run -p 5173:5173 -p 5000:5000 gene-forge-analyzer
-
-# Access at http://localhost:5173
-```
 
 ### Docker Compose (Recommended)
 
@@ -138,75 +118,6 @@ npm run docker:up
 docker-compose up -d --build
 ```
 
-**Docker Compose Features:**
-- ✅ Automated container health checks
-- ✅ Automatic restart on failure
-- ✅ Network isolation
-- ✅ Easy scaling
-
----
-
-## 📁 Project Structure
-
-```
-gene-forge-analyzer/
-├── apps/
-│   ├── client/                  # React Frontend
-│   │   ├── src/
-│   │   │   ├── components/      # UI & Logic Components
-│   │   │   ├── pages/           # Route Pages
-│   │   │   ├── hooks/           # Auth & Query Hooks
-│   │   │   └── utils/           # Analysis Helpers
-│   │   └── package.json
-│   └── server/                  # Flask Backend
-│       ├── app.py               # Main Application Entry
-│       ├── ai_engine.py         # AI Logic
-│       ├── encryption_utils.py  # Security Lib
-│       └── requirements.txt
-├── docker/                      # Docker Configs
-├── docs/                        # Documentation
-├── package.json                 # Monorepo Scripts
-└── README.md                    # Project Overview
-```
-
----
-
-## 🛠️ Technologies Used
-
-### Frontend Stack
-- **Framework**: React 18 + Vite
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS + Shadcn UI
-- **State**: React Query + Context API
-- **Real-time**: Socket.io-client
-- **Visualization**: Recharts
-
-### Backend Stack
-- **Framework**: Python Flask
-- **Database**: SQLite (Development) / PostgreSQL Ready
-- **Security**: PyCryptodome (AES-GCM), JWT
-- **Real-time**: Flask-SocketIO
-- **AI**: Custom NLP Heuristics (mockable for LLM integration)
-
----
-
-## 📦 Usage Examples
-
-### Analyze a DNA Sequence
-1. Upload `.fasta` file or paste sequence.
-2. View real-time base counts and GC content.
-3. Switch tabs to "Applied Genomics" for CRISPR/Primer tools.
-
-### Secure Collaboration
-1. Log in via Google or Email OTP.
-2. Open the "Secure Collaboration" floating widget.
-3. Share your current analysis context with the team in real-time.
-
-### Admin Monitoring
-1. Log in as Administrator.
-2. Navigate to`/admin/dashboard`.
-3. Monitor system health, user activity logs, and AI usage stats.
-
 ---
 
 ## 🚀 Deployment
@@ -215,48 +126,17 @@ gene-forge-analyzer/
 
 **Vercel (Frontend)**
 ```bash
-cd apps/client
-vercel
+cd apps/client && vercel
 ```
 
-**Render/Railway (Backend)**
-Connect your repository and point to `apps/server` directory.
-
-**Docker Hub**
-```bash
-docker build -t drshankarmote-ai-dev/gene-forge-analyzer .
-docker push drshankarmote-ai-dev/gene-forge-analyzer
-```
-
-For detailed deployment guides, see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
-
----
-
-## 📝 License
-
-This project is licensed under the **MIT License** - see [LICENSE](LICENSE) for details.
+**Production Backend**
+Ensure `JWT_SECRET_KEY`, `GOOGLE_CLIENT_ID`, and `MAIL_PASSWORD` are configured in your production environment variables.
 
 ---
 
 ## 👨‍💻 Authors & Contributors
 
 - **Project Lead**: Dr. Shankar Mote - [GitHub](https://github.com/drShankarMote-AI-Dev)
-- **Contributors**: See [CONTRIBUTING.md](CONTRIBUTING.md)
-
----
-
-## 📞 Support & Feedback
-
-| Channel | Purpose |
-|---------|---------|
-| 🐛 [Issues](https://github.com/drShankarMote-AI-Dev/Gene_Forge_Analyzer/issues) | Bug reports & feature requests |
-| 💬 [Discussions](https://github.com/drShankarMote-AI-Dev/Gene_Forge_Analyzer/discussions) | Questions & ideas |
-| 📧 Email | Use GitHub Issues for support |
-
----
 
 **Happy analyzing! 🧬**
-
 *Last updated: January 2026*
-
-

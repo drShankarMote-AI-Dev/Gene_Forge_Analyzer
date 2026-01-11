@@ -14,16 +14,19 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    --primary: 200 95% 35%; /* Deep Scientific Teal */
+    --primary: 200 95% 35%;
+    /* Deep Scientific Teal */
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222 47% 11%;
 
     --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 40%; /* Darker for better contrast */
+    --muted-foreground: 215.4 16.3% 40%;
+    /* Darker for better contrast */
 
-    --accent: 262 83% 58%; /* Vivid Purple */
+    --accent: 262 83% 58%;
+    /* Vivid Purple */
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 84.2% 60.2%;
@@ -45,23 +48,27 @@
 
   .dark {
     /* Dark Mode: Deep Space, High Tech, Bioluminescence */
-    --background: 222 47% 6%; /* Rich Midnight Blue */
+    --background: 222 47% 6%;
+    /* Rich Midnight Blue */
     --foreground: 210 40% 98%;
 
-    --card: 217 33% 12%; /* Slightly lighter deep blue */
+    --card: 217 33% 12%;
+    /* Slightly lighter deep blue */
     --card-foreground: 210 40% 98%;
 
     --popover: 222 47% 6%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 186 100% 50%; /* Electric Cyan for pop */
+    --primary: 186 100% 50%;
+    /* Electric Cyan for pop */
     --primary-foreground: 222 47% 11%;
 
     --secondary: 217 33% 15%;
     --secondary-foreground: 210 40% 98%;
 
     --muted: 217 33% 15%;
-    --muted-foreground: 215 20% 70%; /* Lighter gray for better visibility */
+    --muted-foreground: 215 20% 70%;
+    /* Lighter gray for better visibility */
 
     --accent: 263 70% 65%;
     --accent-foreground: 210 40% 98%;
@@ -227,4 +234,54 @@
 
 ::-webkit-scrollbar-thumb {
   @apply bg-muted-foreground/20 rounded-full hover:bg-muted-foreground/30 transition-colors;
+}
+
+/* Admin Dashboard Specific Styles */
+.admin-sidebar {
+  @apply glass border-r border-border/50 transition-all duration-300;
+  box-shadow: 20px 0 50px -20px rgba(0, 0, 0, 0.1);
+}
+
+.admin-nav-item {
+  @apply flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-muted-foreground hover:text-foreground hover:bg-primary/5 active:scale-95;
+}
+
+.admin-nav-item.active {
+  @apply bg-primary/10 text-primary font-bold border border-primary/20;
+}
+
+.admin-card-gradient {
+  background: linear-gradient(135deg, hsla(var(--primary), 0.05) 0%, hsla(var(--accent), 0.05) 100%);
+}
+
+.stat-glow {
+  @apply relative overflow-hidden;
+}
+
+.stat-glow::after {
+  content: '';
+  @apply absolute -right-4 -top-4 w-24 h-24 rounded-full blur-3xl opacity-20 transition-opacity duration-500;
+  background: hsl(var(--primary));
+}
+
+.glass-morphism {
+  @apply bg-white/10 dark:bg-black/20 backdrop-blur-2xl border border-white/20 dark:border-white/5;
+}
+
+@keyframes slow-pulse {
+
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.5;
+    transform: scale(1.05);
+  }
+}
+
+.animate-slow-pulse {
+  animation: slow-pulse 4s ease-in-out infinite;
 }

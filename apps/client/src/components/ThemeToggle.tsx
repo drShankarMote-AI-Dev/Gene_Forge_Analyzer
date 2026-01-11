@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTheme } from '../theme/ThemeProvider';
+import { useTheme } from '../theme/ThemeContext';
 
 export const ThemeToggle: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
@@ -14,8 +14,8 @@ export const ThemeToggle: React.FC = () => {
     >
       {/* Background gradient that shifts */}
       <div className={`absolute inset-0 transition-all duration-700 ${isDark
-          ? 'bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-primary/10'
-          : 'bg-gradient-to-r from-amber-400/10 via-yellow-400/10 to-orange-400/10'
+        ? 'bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-primary/10'
+        : 'bg-gradient-to-r from-amber-400/10 via-yellow-400/10 to-orange-400/10'
         }`} />
 
       {/* Emoji indicators on track */}
@@ -48,8 +48,8 @@ export const ThemeToggle: React.FC = () => {
 
       {/* Subtle pulse effect */}
       <div className={`absolute inset-0 rounded-full transition-opacity duration-500 ${isDark
-          ? 'bg-primary/5 group-hover:bg-primary/10'
-          : 'bg-amber-500/5 group-hover:bg-amber-500/10'
+        ? 'bg-primary/5 group-hover:bg-primary/10'
+        : 'bg-amber-500/5 group-hover:bg-amber-500/10'
         }`} />
     </button>
   );
