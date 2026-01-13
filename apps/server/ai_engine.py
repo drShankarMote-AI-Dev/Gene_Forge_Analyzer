@@ -11,6 +11,17 @@ load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file_
 
 class AIBioEngine:
     def __init__(self):
+        # AI Gateway (Priority)
+        self.gateway_key = os.environ.get("AI_GATEWAY_API_KEY")
+        if self.gateway_key:
+            print("AI GATEWAY: Initialize Secure Laboratory Proxy...")
+            self.gateway_client = OpenAI(
+                api_key=self.gateway_key,
+                base_url='https://ai-gateway.vercel.sh/v1'
+            )
+        else:
+            self.gateway_client = None
+
         # Primary Model: OpenAI
         self.openai_key = os.environ.get("OPENAI_API_KEY")
         if self.openai_key and "your-" in self.openai_key:
@@ -35,7 +46,22 @@ class AIBioEngine:
         """Non-streaming version for simpler integration."""
         prompt = self._build_prompt(analysis_data, mode)
         
-        # Try OpenAI
+        # 1. Try AI Gateway (Experimental/High Priority)
+        if self.gateway_client:
+            try:
+                print("AI GATEWAY: Routing through Vercel Neural Proxy...")
+                response = self.gateway_client.chat.completions.create(
+                    model='openai/gpt-5', # Custom model per user specs
+                    messages=[
+                        {"role": "system", "content": "You are an expert bioinformatician."},
+                        {"role": "user", "content": prompt}
+                    ]
+                )
+                return response.choices[0].message.content
+            except Exception as e:
+                print(f"AI GATEWAY: Proxy failure, falling back: {e}")
+
+        # 2. Try Direct OpenAI
         if self.openai_client:
             try:
                 response = self.openai_client.chat.completions.create(
@@ -67,7 +93,28 @@ class AIBioEngine:
         prompt = self._build_prompt(analysis_data, mode)
         model_used = "none"
 
-        # 1. Try Primary (OpenAI)
+        # 1. Try AI Gateway
+        if self.gateway_client:
+            try:
+                print("AI GATEWAY: Attempting stream via Laboratory Proxy...")
+                stream = self.gateway_client.chat.completions.create(
+                    model='openai/gpt-5',
+                    messages=[
+                        {"role": "system", "content": "You are an expert bioinformatician."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    stream=True
+                )
+                model_used = "gateway-experimental-gpt5"
+                yield f"__MODEL_USED__:{model_used}\n"
+                for chunk in stream:
+                    if chunk.choices and chunk.choices[0].delta.content is not None:
+                        yield chunk.choices[0].delta.content
+                return
+            except Exception as e:
+                print(f"AI GATEWAY: Proxy stream failure: {e}")
+
+        # 2. Try Primary (OpenAI)
         if self.openai_client:
             models_to_try = ["gpt-4o", "gpt-4", "gpt-3.5-turbo"]
             for model_name in models_to_try:
@@ -93,7 +140,7 @@ class AIBioEngine:
                     if model_name == models_to_try[-1]: # If last one failed
                          print("AI GATEWAY: All OpenAI models failed. Trying Gemini fallback...")
         
-        # 2. Fallback (Gemini)
+        # 3. Fallback (Gemini)
         if self.gemini_model:
             try:
                 print("AI GATEWAY: Routing to Fallback Model (Gemini 1.5)...")
