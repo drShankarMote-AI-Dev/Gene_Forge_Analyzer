@@ -60,7 +60,7 @@ export default defineConfig(({ mode }: ConfigEnv) => {
           },
         },
       },
-      chunkSizeWarningLimit: 1000,
+      chunkSizeWarningLimit: 2000,
     },
     define: {
       'import.meta.env.VITE_API_URL': JSON.stringify(env.VITE_API_URL || '/api'),
