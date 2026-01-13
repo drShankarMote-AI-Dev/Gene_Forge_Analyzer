@@ -39,8 +39,8 @@ app.config['JWT_REFRESH_COOKIE_PATH'] = '/api/auth/refresh'
 app.config['JWT_COOKIE_CSRF_PROTECT'] = False
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(minutes=60)
 app.config['JWT_REFRESH_TOKEN_EXPIRES'] = datetime.timedelta(days=30)
-app.config['JWT_COOKIE_SECURE'] = False  # Set to True in production
-app.config['JWT_COOKIE_SAMESITE'] = 'Lax'
+app.config['JWT_COOKIE_SECURE'] = os.environ.get('JWT_COOKIE_SECURE', 'False') == 'True'
+app.config['JWT_COOKIE_SAMESITE'] = os.environ.get('JWT_COOKIE_SAMESITE', 'Lax')
 
 # Email Configuration (Mapped to PROD_AUTH_VERCEL spec)
 app.config['MAIL_SERVER'] = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
@@ -54,8 +54,11 @@ db = SQLAlchemy(app)
 jwt = JWTManager(app)
 mail = Mail(app)
 # Multi-origin CORS support for development and production
+# Production CORS setup
 frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:8080')
-allowed_origins = [frontend_url, "http://localhost:8080", "http://localhost:8081", "http://localhost:5173", "http://localhost:3000"]
+allowed_origins = [url.strip() for url in os.environ.get('ALLOWED_ORIGINS', frontend_url).split(',')]
+if "http://localhost:8080" not in allowed_origins:
+    allowed_origins.append("http://localhost:8080")
 
 socketio = SocketIO(app, cors_allowed_origins=allowed_origins, manage_session=False)
 CORS(app, supports_credentials=True, origins=allowed_origins)

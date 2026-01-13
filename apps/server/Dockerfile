@@ -20,5 +20,5 @@ EXPOSE 5000
 LABEL org.opencontainers.image.title="GeneForge Analysis Engine"
 LABEL org.opencontainers.image.description="AI-Powered Genomic Analysis Backend"
 
-# Run with eventlet for Socket.IO support
-CMD ["python", "app.py"]
+# Run with gunicorn and eventlet for production performance
+CMD ["gunicorn", "-k", "eventlet", "-w", "1", "--bind", "0.0.0.0:5000", "app:app"]

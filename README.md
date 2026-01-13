@@ -120,17 +120,16 @@ docker-compose up -d --build
 
 ---
 
-## 🚀 Deployment
-
-### One-Click Deployments
-
-**Vercel (Frontend)**
+### Production Startup
+To run the backend in a production environment (using Gunicorn):
 ```bash
-cd apps/client && vercel
+npm run start:server
 ```
 
-**Production Backend**
-Ensure `JWT_SECRET_KEY`, `GOOGLE_CLIENT_ID`, and `MAIL_PASSWORD` are configured in your production environment variables.
+Ensure the following environment variables are set in production:
+- `VITE_API_URL`: Fully qualified URL to your backend API (e.g., `https://api.yourdomain.com/api`).
+- `ALLOWED_ORIGINS`: Comma-separated list of allowed frontend URLs for CORS.
+- `JWT_COOKIE_SECURE`: Set to `True` for HTTPS.
 
 ---
 
