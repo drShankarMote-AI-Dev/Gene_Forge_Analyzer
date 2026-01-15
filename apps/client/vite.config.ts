@@ -23,7 +23,7 @@ export default defineConfig(({ mode }: ConfigEnv) => {
     server: {
       host: "::",
       port: 8080,
-      allowedHosts: [".vercel.app", "gene-forge-analyzer.vercel.app"],
+      allowedHosts: [".vercel.app", "gene-forge-analyzer.vercel.app", "gene-forge-analyzer.onrender.com"],
       proxy: {
         '/api': {
           target: 'http://127.0.0.1:5000',

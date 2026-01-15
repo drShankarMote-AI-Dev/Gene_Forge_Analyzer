@@ -84,17 +84,39 @@ The `admin.py` utility provides a unified interface for managing the laboratory 
 
 ## 🏗️ Monorepo Architecture
 
-- **`apps/client`**: High-fidelity React + Vite Research Dashboard. (Port 5173 / Proxy 8080)
+- **`apps/client`**: High-fidelity React + Vite Research Dashboard. (Port 8080)
 - **`apps/server`**: Python (Flask) Genomic Analysis Engine with AES-256-GCM. (Port 5000)
 - **`admin.py`**: Unified system management CLI.
+
+---
+
+## 🌐 Deployment
+
+### Vercel / Render Compatibility
+The application is pre-configured to handle modern deployment environments. 
+
+- **Frontend**: The `vite.config.ts` includes `allowedHosts` for `.vercel.app` and `gene-forge-analyzer.onrender.com` to prevent "Host Blocked" errors.
+- **Environment**: Use the `.env.example` as a template for your production environment variables.
+
+### Production Startup
+To run the backend in a production environment (using Gunicorn):
+```bash
+npm run start:server
+```
+
+Ensure the following environment variables are set in production:
+- `VITE_API_URL`: Fully qualified URL to your backend API (e.g., `https://api.yourdomain.com/api`).
+- `ALLOWED_ORIGINS`: Comma-separated list of allowed frontend URLs for CORS.
+- `JWT_COOKIE_SECURE`: Set to `True` for HTTPS.
 
 ---
 
 ## 🛠️ Technologies Used
 
 ### Frontend Stack
-- **Framework**: React 18 + Vite
+- **Framework**: React 18 + Vite (SWC)
 - **Styling**: Tailwind CSS + Shadcn UI (Clinical Theme)
+- **Types**: TypeScript 5+
 - **State**: React Query + Context API
 - **Visualization**: Recharts
 
@@ -115,21 +137,8 @@ The `admin.py` utility provides a unified interface for managing the laboratory 
 npm run docker:up
 
 # Rebuild after changes
-docker-compose up -d --build
+# docker-compose up -d --build
 ```
-
----
-
-### Production Startup
-To run the backend in a production environment (using Gunicorn):
-```bash
-npm run start:server
-```
-
-Ensure the following environment variables are set in production:
-- `VITE_API_URL`: Fully qualified URL to your backend API (e.g., `https://api.yourdomain.com/api`).
-- `ALLOWED_ORIGINS`: Comma-separated list of allowed frontend URLs for CORS.
-- `JWT_COOKIE_SECURE`: Set to `True` for HTTPS.
 
 ---
 
@@ -138,4 +147,4 @@ Ensure the following environment variables are set in production:
 - **Project Lead**: Dr. Shankar Mote - [GitHub](https://github.com/drShankarMote-AI-Dev)
 
 **Happy analyzing! 🧬**
-*Last updated: January 2026*
+*Last updated: January 15, 2026*
