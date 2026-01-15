@@ -238,50 +238,88 @@
 
 /* Admin Dashboard Specific Styles */
 .admin-sidebar {
-  @apply glass border-r border-border/50 transition-all duration-300;
-  box-shadow: 20px 0 50px -20px rgba(0, 0, 0, 0.1);
+  @apply glass border-r border-border/50 transition-all duration-500 fixed;
+  box-shadow: 10px 0 40px -20px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(180deg, hsla(var(--background), 0.8), hsla(var(--background), 0.95));
+}
+
+.admin-sidebar::before {
+  content: '';
+  @apply absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none;
 }
 
 .admin-nav-item {
-  @apply flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-muted-foreground hover:text-foreground hover:bg-primary/5 active:scale-95;
+  @apply flex items-center gap-3 px-5 py-3.5 rounded-2xl transition-all duration-300 text-muted-foreground/80 hover:text-primary hover:bg-primary/5 active:scale-95 relative overflow-hidden;
+}
+
+.admin-nav-item::before {
+  content: '';
+  @apply absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-0 bg-primary rounded-r-full transition-all duration-300 opacity-0;
+}
+
+.admin-nav-item:hover::before {
+  @apply h-6 opacity-100;
 }
 
 .admin-nav-item.active {
-  @apply bg-primary/10 text-primary font-bold border border-primary/20;
+  @apply bg-primary/10 text-primary font-black border border-primary/20 shadow-lg shadow-primary/5;
 }
 
-.admin-card-gradient {
-  background: linear-gradient(135deg, hsla(var(--primary), 0.05) 0%, hsla(var(--accent), 0.05) 100%);
+.admin-nav-item.active::before {
+  @apply h-8 opacity-100;
 }
 
-.stat-glow {
-  @apply relative overflow-hidden;
+.admin-nav-item svg {
+  @apply transition-transform duration-300;
 }
 
-.stat-glow::after {
+.admin-nav-item:hover svg {
+  @apply scale-110;
+}
+
+.admin-header-glass {
+  @apply sticky top-0 z-40 backdrop-blur-2xl border-b border-border/40;
+  background: linear-gradient(to bottom, hsla(var(--background), 0.9), hsla(var(--background), 0.7));
+}
+
+.admin-search-input {
+  @apply bg-muted/30 border-border/40 focus:bg-background focus:ring-2 focus:ring-primary/20 transition-all duration-300 rounded-2xl;
+}
+
+.admin-card-premium {
+  @apply glass-card rounded-3xl p-6 border-border/40 hover:border-primary/30 transition-all duration-500;
+  background: linear-gradient(145deg, hsla(var(--card), 0.6), hsla(var(--card), 0.4));
+}
+
+.stat-glow-premium {
+  @apply relative overflow-hidden rounded-3xl p-8;
+  background: linear-gradient(135deg, hsla(var(--primary), 0.1) 0%, hsla(var(--accent), 0.05) 100%);
+}
+
+.stat-glow-premium::after {
   content: '';
-  @apply absolute -right-4 -top-4 w-24 h-24 rounded-full blur-3xl opacity-20 transition-opacity duration-500;
-  background: hsl(var(--primary));
+  @apply absolute -right-8 -top-8 w-48 h-48 rounded-full blur-[80px] opacity-30 pointer-events-none;
+  background: radial-gradient(circle, hsl(var(--primary)), transparent);
 }
 
-.glass-morphism {
-  @apply bg-white/10 dark:bg-black/20 backdrop-blur-2xl border border-white/20 dark:border-white/5;
+/* Background Grids & Patterns */
+.bg-grid-premium {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, hsla(var(--foreground), 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, hsla(var(--foreground), 0.03) 1px, transparent 1px);
 }
 
-@keyframes slow-pulse {
-
-  0%,
-  100% {
-    opacity: 0.3;
-    transform: scale(1);
-  }
-
-  50% {
-    opacity: 0.5;
-    transform: scale(1.05);
-  }
+.bg-dot-premium {
+  background-image: radial-gradient(hsla(var(--foreground), 0.05) 1px, transparent 1px);
+  background-size: 24px 24px;
 }
 
-.animate-slow-pulse {
-  animation: slow-pulse 4s ease-in-out infinite;
+@keyframes float-gentle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.animate-float-gentle {
+  animation: float-gentle 4s ease-in-out infinite;
 }

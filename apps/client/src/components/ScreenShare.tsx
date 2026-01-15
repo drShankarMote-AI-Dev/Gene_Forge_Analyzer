@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { io, Socket } from 'socket.io-client';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { socket } from '../utils/socket';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import {
@@ -11,57 +11,35 @@ import {
 import { useAuth } from '../hooks/useAuth';
 import { toast } from './ui/use-toast';
 
+interface WebRTCSignalData {
+    offer?: RTCSessionDescriptionInit;
+    answer?: RTCSessionDescriptionInit;
+    candidate?: RTCIceCandidateInit;
+    room: string;
+}
+
 const ScreenShare: React.FC = () => {
     const { user, isAuthenticated } = useAuth();
     const [isSharing, setIsSharing] = useState(false);
     const [isReceiving, setIsReceiving] = useState(false);
     const [room] = useState('global-lab');
-    const socketRef = useRef<Socket | null>(null);
     const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
     const localStreamRef = useRef<MediaStream | null>(null);
     const remoteVideoRef = useRef<HTMLVideoElement>(null);
 
-    const API_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
-
-    const iceServers = {
+    const iceServers = useMemo(() => ({
         iceServers: [
             { urls: 'stun:stun.l.google.com:19302' },
             { urls: 'stun:stun1.l.google.com:19302' },
         ]
-    };
+    }), []);
 
-    useEffect(() => {
-        if (isAuthenticated) {
-            socketRef.current = io(API_URL);
-            socketRef.current.emit('join', { room, user: user?.email });
-
-            socketRef.current.on('webrtc-offer', async (data) => {
-                if (isSharing) return; // Don't receive if sharing
-                await handleOffer(data.offer);
-            });
-
-            socketRef.current.on('webrtc-answer', async (data) => {
-                await handleAnswer(data.answer);
-            });
-
-            socketRef.current.on('webrtc-ice-candidate', async (data) => {
-                await handleIceCandidate(data.candidate);
-            });
-
-            return () => {
-                stopSharing();
-                socketRef.current?.disconnect();
-            };
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isAuthenticated, room]);
-
-    const createPeerConnection = () => {
+    const createPeerConnection = useCallback(() => {
         const pc = new RTCPeerConnection(iceServers);
 
         pc.onicecandidate = (event) => {
             if (event.candidate) {
-                socketRef.current?.emit('webrtc-ice-candidate', {
+                socket.emit('webrtc-ice-candidate', {
                     candidate: event.candidate,
                     room
                 });
@@ -76,7 +54,72 @@ const ScreenShare: React.FC = () => {
         };
 
         return pc;
-    };
+    }, [iceServers, room]);
+
+    const processOffer = useCallback(async (offer: RTCSessionDescriptionInit) => {
+        peerConnectionRef.current = createPeerConnection();
+        await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(offer));
+
+        const answer = await peerConnectionRef.current.createAnswer();
+        await peerConnectionRef.current.setLocalDescription(answer);
+
+        socket.emit('webrtc-answer', { answer, room });
+    }, [createPeerConnection, room]);
+
+    const processAnswer = useCallback(async (answer: RTCSessionDescriptionInit) => {
+        await peerConnectionRef.current?.setRemoteDescription(new RTCSessionDescription(answer));
+    }, []);
+
+    const processIceCandidate = useCallback(async (candidate: RTCIceCandidateInit) => {
+        try {
+            await peerConnectionRef.current?.addIceCandidate(new RTCIceCandidate(candidate));
+        } catch (e) {
+            console.error("Error adding ice candidate", e);
+        }
+    }, []);
+
+    const stopSharing = useCallback(() => {
+        localStreamRef.current?.getTracks().forEach(track => track.stop());
+        peerConnectionRef.current?.close();
+        setIsSharing(false);
+        setIsReceiving(false);
+    }, []);
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            if (!socket.connected) {
+                socket.connect();
+            }
+
+            socket.emit('join', { room, user: user?.email });
+
+            const handleOffer = async (data: WebRTCSignalData) => {
+                if (isSharing || !data.offer) return;
+                await processOffer(data.offer);
+            };
+
+            const handleAnswer = async (data: WebRTCSignalData) => {
+                if (!data.answer) return;
+                await processAnswer(data.answer);
+            };
+
+            const handleIceCandidate = async (data: WebRTCSignalData) => {
+                if (!data.candidate) return;
+                await processIceCandidate(data.candidate);
+            };
+
+            socket.on('webrtc-offer', handleOffer);
+            socket.on('webrtc-answer', handleAnswer);
+            socket.on('webrtc-ice-candidate', handleIceCandidate);
+
+            return () => {
+                stopSharing();
+                socket.off('webrtc-offer', handleOffer);
+                socket.off('webrtc-answer', handleAnswer);
+                socket.off('webrtc-ice-candidate', handleIceCandidate);
+            };
+        }
+    }, [isAuthenticated, room, isSharing, user?.email, processOffer, processAnswer, processIceCandidate, stopSharing]);
 
     const startSharing = async () => {
         try {
@@ -92,7 +135,7 @@ const ScreenShare: React.FC = () => {
             const offer = await peerConnectionRef.current.createOffer();
             await peerConnectionRef.current.setLocalDescription(offer);
 
-            socketRef.current?.emit('webrtc-offer', { offer, room });
+            socket.emit('webrtc-offer', { offer, room });
 
             stream.getVideoTracks()[0].onended = () => stopSharing();
 
@@ -100,35 +143,6 @@ const ScreenShare: React.FC = () => {
         } catch (err) {
             console.error(err);
             toast({ title: "Sharing Failed", description: "Permission denied or browser not supported.", variant: "destructive" });
-        }
-    };
-
-    const stopSharing = () => {
-        localStreamRef.current?.getTracks().forEach(track => track.stop());
-        peerConnectionRef.current?.close();
-        setIsSharing(false);
-        setIsReceiving(false);
-    };
-
-    const handleOffer = async (offer: RTCSessionDescriptionInit) => {
-        peerConnectionRef.current = createPeerConnection();
-        await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(offer));
-
-        const answer = await peerConnectionRef.current.createAnswer();
-        await peerConnectionRef.current.setLocalDescription(answer);
-
-        socketRef.current?.emit('webrtc-answer', { answer, room });
-    };
-
-    const handleAnswer = async (answer: RTCSessionDescriptionInit) => {
-        await peerConnectionRef.current?.setRemoteDescription(new RTCSessionDescription(answer));
-    };
-
-    const handleIceCandidate = async (candidate: RTCIceCandidateInit) => {
-        try {
-            await peerConnectionRef.current?.addIceCandidate(new RTCIceCandidate(candidate));
-        } catch (e) {
-            console.error("Error adding ice candidate", e);
         }
     };
 

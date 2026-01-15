@@ -3,14 +3,14 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "npm run clean:ports && concurrently \"npm run dev:client\" \"npm run dev:server\"",
+    "dev": "npm run clean:ports && npx concurrently \"npm run dev:client\" \"npm run dev:server\"",
     "dev:client": "cd apps/client && npm run dev",
     "dev:server": "cd apps/server && python app.py",
     "clean:ports": "taskkill /F /IM python.exe /T 2>nul || exit 0",
     "install:all": "npm install && cd apps/server && python -m pip install -r requirements.txt",
     "lint": "npm run lint --workspaces --if-present",
     "start": "npm run start:server",
-    "start:server": "cd apps/server && gunicorn -k eventlet -w 1 app:app",
+    "start:server": "cd apps/server && gunicorn -k eventlet -w 1 --bind 0.0.0.0:$PORT app:app",
     "build": "npm run build --workspace=apps/client",
     "docker:build": "docker-compose build",
     "docker:up": "docker-compose up"

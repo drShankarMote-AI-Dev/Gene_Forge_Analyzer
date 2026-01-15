@@ -7,7 +7,7 @@
 [![Python](https://img.shields.io/badge/python-3.9+-blue)](https://python.org/)
 [![Docker](https://img.shields.io/badge/docker-ready-blue)](https://www.docker.com/)
 
-> **A comprehensive, production-ready DNA sequence analysis platform** designed for biologists, researchers, and students. Analyze genetic sequences with professional-grade tools, collaborate securely in real-time, and leverage AI-driven insights with a sleek, clinical-grade premium interface.
+> **A comprehensive, production-ready DNA sequence analysis platform** designed for biologists, researchers, and students. Analyze genetic sequences with professional-grade tools, collaborate securely in real-time, and leverage AI-driven insights within a sleek, clinical-grade interface.
 
 ---
 
@@ -19,10 +19,8 @@
 - [Project Structure](#-project-structure)
 - [Technologies](#-technologies-used)
 - [Installation](#-installation)
-- [Docker Setup](#-docker-setup)
-- [Usage Examples](#-usage-examples)
-- [Contributing](#-contributing)
 - [Deployment](#-deployment)
+- [Contributing](#-contributing)
 - [License](#-license)
 
 ---
@@ -30,25 +28,25 @@
 ## 🌟 Features
 
 ### 🔬 Core Analysis Tools
-- 🧪 **Sequence Analysis** - Comprehensive base composition stats.
-- 📊 **GC Content Analysis** - Sliding window distribution charts with Recharts.
-- ✂️ **CRISPR & Restriction Sites** - Detect PAM sites and enzymatic cleavage points.
-- 🎯 **Primer Designer** - Optimize PCR primers with Tm calculation.
-- 🧬 **Translation & Alignment** - Amino acid conversion and sequence mutation inspection.
-- 🎨 **Motif Search** - High-speed pattern matching.
+- 🧪 **Sequence Analysis**: Comprehensive base composition statistics and molecular weight calculations.
+- 📊 **GC Content Visualization**: Dynamic sliding window distribution charts powered by Recharts.
+- ✂️ **CRISPR & Restriction Mapping**: Automated detection of PAM sites and enzymatic cleavage points.
+- 🎯 **Primer Designer**: Advanced PCR primer optimization with real-time Tm calculation.
+- 🧬 **Mutation & Alignment**: Amino acid conversion, ORF finding, and sequence mutation inspection.
+- 🎨 **Motif Discovery**: High-speed pattern matching and regulatory element search.
 
 ### 🛡️ Security & Enterprise (Identity Orchestration)
-- 🔐 **Multi-Factor Authentication** - Secure login via Google OAuth 2.0 and Email OTP.
-- 👷 **Role-Based Access Control (RBAC)** - Clear distinction between standard Users, Researchers, and Admins.
-- 🔒 **End-to-End Encryption** - Secure data transmission and AES-256-GCM storage.
-- 📜 **Audit Logging** - Complete trail of forensic telemetry in a functional leaderboard view.
-- ⚖️ **Compliance Ready** - GDPR-compliant data purging and rigorous security policies.
+- 🔐 **Multi-Factor Authentication**: Secure login via Google OAuth 2.0 and Email OTP.
+- 👷 **Role-Based Access Control (RBAC)**: Hierarchical permissions (User, Researcher, Admin) with strict boundary enforcement.
+- 🔒 **End-to-End Encryption**: AES-256-GCM encryption for sensitive research data at rest and in transit.
+- 📜 **Audit Logging**: Immutable forensic telemetry for all system actions.
+- ⚖️ **Compliance Ready**: Foundations for GDPR-compliant data handling and security policies.
 
 ### 🤝 Collaboration & AI
-- 💬 **Secure Chat** - Real-time, encrypted collaborative workspace for research teams.
-- 🤖 **AI Assistant** - "Biological Intelligence" engine offering explanations in Student or Researcher modes.
-- 📁 **Project Management** - Save analysis sessions, manage version history, and restore snapshots.
-- 🖥️ **AI Gateway** - Dedicated monitoring of neural health and API consumption.
+- 💬 **Secure Research Chat**: Real-time, encrypted collaborative workspace for teams.
+- 🤖 **Bio-AI Assistant**: "Biological Intelligence" engine capable of explaining complex genomic data in Student or Researcher modes.
+- 📁 **Project Management**: Version-controlled analysis sessions with snapshot restoration.
+- 🖥️ **AI Gateway**: Integrated monitoring of API consumption and neural model health.
 
 ---
 
@@ -57,15 +55,19 @@
 Initialize the complete research stack from the root directory:
 
 ```bash
-# 1. Initialize environment
+# 1. Initialize environment (Install Node & Python dependencies)
 npm run install:all
 
 # 2. Launch Local Analysis Engine + Dashboard (Concurrent)
+# CLIENT: http://localhost:8080 | SERVER: http://localhost:5000
 npm run dev
 
 # 3. Establish Admin Access (CLI)
+# Open a new terminal to run admin commands
 python admin.py reset --email admin@geneforge.com --password admin
 ```
+
+> **Note:** The `dev` command automatically handles port cleaning and concurrent execution of both client and server.
 
 ---
 
@@ -84,30 +86,39 @@ The `admin.py` utility provides a unified interface for managing the laboratory 
 
 ## 🏗️ Monorepo Architecture
 
-- **`apps/client`**: High-fidelity React + Vite Research Dashboard. (Port 8080)
-- **`apps/server`**: Python (Flask) Genomic Analysis Engine with AES-256-GCM. (Port 5000)
+This project follows a strict monorepo structure using modern tooling:
+
+- **`apps/client`**: High-fidelity React + Vite Research Dashboard.
+  - *Tech:* React 18, TailwindCSS, Shadcn UI, Recharts, Socket.IO Client.
+- **`apps/server`**: Python (Flask) Genomic Analysis Engine.
+  - *Tech:* Flask, Eventlet, PyCryptodome, SQLite/PostgreSQL, OpenAI/Gemini integration.
 - **`admin.py`**: Unified system management CLI.
+
+### 🔌 Centralized Orchestration
+- **`src/utils/api.ts`**: Intelligent fetch wrapper that auto-resolves endpoints (Local vs. Cloud).
+- **`src/utils/socket.ts`**: Unified Socket.IO instance for low-latency P2P collaboration.
 
 ---
 
 ## 🌐 Deployment
 
-### Vercel / Render Compatibility
-The application is pre-configured to handle modern deployment environments. 
+### Vercel (Frontend) & Render (Backend)
+The platform is optimized for modern cloud ecosystems with pre-configured headers and networking triggers.
 
-- **Frontend**: The `vite.config.ts` includes `allowedHosts` for `.vercel.app` and `gene-forge-analyzer.onrender.com` to prevent "Host Blocked" errors.
-- **Environment**: Use the `.env.example` as a template for your production environment variables.
+1.  **Backend (Render/Docker)**:
+    -   Uses `gunicorn` with `eventlet` workers for WebSocket support.
+    -   Environment variables control CORS (`ALLOWED_ORIGINS`) and Security (`JWT_COOKIE_SECURE`).
 
-### Production Startup
-To run the backend in a production environment (using Gunicorn):
-```bash
-npm run start:server
-```
+2.  **Frontend (Vercel)**:
+    -   Connects to backend via `VITE_API_URL`.
+    -   Supports SPA routing via `vercel.json` rewrites.
 
-Ensure the following environment variables are set in production:
-- `VITE_API_URL`: Fully qualified URL to your backend API (e.g., `https://api.yourdomain.com/api`).
-- `ALLOWED_ORIGINS`: Comma-separated list of allowed frontend URLs for CORS.
-- `JWT_COOKIE_SECURE`: Set to `True` for HTTPS.
+### Production Environment Variables
+Ensure these are configured in your deployment settings:
+- `VITE_API_URL`: Path to your backend (e.g., `https://api.yourdomain.com`).
+- `FRONTEND_URL`: URL of your frontend for session integrity.
+- `ALLOWED_ORIGINS`: Comma-separated list of permitted origin domains.
+- `JWT_COOKIE_SECURE`: `True` (Mandatory for HTTPS).
 
 ---
 
@@ -115,29 +126,30 @@ Ensure the following environment variables are set in production:
 
 ### Frontend Stack
 - **Framework**: React 18 + Vite (SWC)
+- **Language**: TypeScript 5+
 - **Styling**: Tailwind CSS + Shadcn UI (Clinical Theme)
-- **Types**: TypeScript 5+
 - **State**: React Query + Context API
-- **Visualization**: Recharts
+- **Real-time**: Socket.IO Client 4
 
 ### Backend Stack
-- **Framework**: Python Flask
+- **Framework**: Python Flask + Eventlet
+- **Server**: Gunicorn
 - **Database**: SQLite (Development) / PostgreSQL (Production)
 - **Security**: PyCryptodome (AES-GCM), JWT-Extended
-- **Real-time**: Flask-SocketIO
+- **AI**: OpenAI & Gemini API Integration
 
 ---
 
 ## 🐳 Docker Setup
 
-### Docker Compose (Recommended)
+For containerized deployment, use the included Docker Compose configuration:
 
 ```bash
-# Start the application
+# Build and Start the application stack
 npm run docker:up
 
-# Rebuild after changes
-# docker-compose up -d --build
+# Rebuild containers after changes
+npm run docker:build
 ```
 
 ---
@@ -146,5 +158,5 @@ npm run docker:up
 
 - **Project Lead**: Dr. Shankar Mote - [GitHub](https://github.com/drShankarMote-AI-Dev)
 
-**Happy analyzing! 🧬**
-*Last updated: January 15, 2026*
+---
+**Happy Analyzing! 🧬**

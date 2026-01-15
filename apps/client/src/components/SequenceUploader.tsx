@@ -8,6 +8,7 @@ import { toast } from '@/components/ui/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UploadCloud, FileText, Keyboard, CheckCircle2, Database, ShieldCheck, Clock, Loader2 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { API_BASE_URL as API_URL } from '@/utils/api';
 
 interface SequenceUploaderProps {
   onSequenceSubmit: (sequence: string) => void;
@@ -101,7 +102,6 @@ const SequenceUploader: React.FC<SequenceUploaderProps> = ({ onSequenceSubmit })
   const fetchSavedRecords = async () => {
     setLoadingSaved(true);
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
       const response = await fetch(`${API_URL}/genomic-data`, {
         credentials: 'include',
       });
@@ -116,7 +116,6 @@ const SequenceUploader: React.FC<SequenceUploaderProps> = ({ onSequenceSubmit })
 
   const loadRecord = async (id: number) => {
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
       const response = await fetch(`${API_URL}/genomic-data/${id}`, {
         credentials: 'include',
       });
@@ -162,7 +161,7 @@ const SequenceUploader: React.FC<SequenceUploaderProps> = ({ onSequenceSubmit })
       </CardHeader>
 
       <CardContent className="space-y-6">
-        <Tabs value={tab} onValueChange={v => setTab(v as 'manual' | 'file')} className="w-full">
+        <Tabs value={tab} onValueChange={v => setTab(v as 'manual' | 'file' | 'saved')} className="w-full">
           <TabsList className={`grid ${isAuthenticated ? 'grid-cols-3' : 'grid-cols-2'} glass border border-border/50 p-1 h-11 rounded-xl`}>
             <TabsTrigger value="manual" className="rounded-lg flex gap-2 font-bold text-xs transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Keyboard className="h-4 w-4" />

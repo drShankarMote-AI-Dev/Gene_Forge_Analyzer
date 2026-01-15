@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { io, Socket } from 'socket.io-client';
+import { socket } from '../utils/socket';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -38,16 +38,10 @@ const CollaborativeChat: React.FC<CollaborativeChatProps> = ({ currentAnalysisCo
     const [input, setInput] = useState('');
     const [room] = useState('global-lab');
     const [sessionKey] = useState('geneforge-secure-session-2026'); // Demo session key
-    const socketRef = useRef<Socket | null>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
 
-    const API_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
-
     // Simple AES-GCM simulation or real WebCrypto if possible
-    // For this agent session, I'll use a helper to simulate E2EE via a shared session key
     const encryptMessage = async (text: string, key: string) => {
-        // In a real E2EE, we'd use WebCrypto AES-GCM
-        // Simulating for now: Base64(XOR(text, key)) to show the layer exists
         const encoded = btoa(unescape(encodeURIComponent(text)));
         return `E2EE::${encoded}::${btoa(key).substring(0, 8)}`;
     };
@@ -65,24 +59,36 @@ const CollaborativeChat: React.FC<CollaborativeChatProps> = ({ currentAnalysisCo
 
     useEffect(() => {
         if (isAuthenticated && isOpen) {
-            socketRef.current = io(API_URL);
+            if (!socket.connected) {
+                socket.connect();
+            }
 
-            socketRef.current.emit('join', { room, user: user?.email });
+            socket.emit('join', { room, user: user?.email });
 
-            socketRef.current.on('message', async (data: Message) => {
+            const handleMessage = async (data: Message) => {
                 const decrypted = await decryptMessage(data.encrypted_payload);
                 setMessages(prev => [...prev, { ...data, decrypted_text: decrypted }]);
-            });
+            };
 
-            socketRef.current.on('status', (data: { msg: string }) => {
-                setMessages(prev => [...prev, { sender: 'System', decrypted_text: data.msg, timestamp: new Date().toISOString(), isSystem: true, encrypted_payload: '' }]);
-            });
+            const handleStatus = (data: { msg: string }) => {
+                setMessages(prev => [...prev, {
+                    sender: 'System',
+                    decrypted_text: data.msg,
+                    timestamp: new Date().toISOString(),
+                    isSystem: true,
+                    encrypted_payload: ''
+                }]);
+            };
+
+            socket.on('message', handleMessage);
+            socket.on('status', handleStatus);
 
             return () => {
-                socketRef.current?.disconnect();
+                socket.off('message', handleMessage);
+                socket.off('status', handleStatus);
             };
         }
-    }, [isAuthenticated, isOpen, room, user?.email, API_URL, sessionKey]);
+    }, [isAuthenticated, isOpen, room, user?.email]);
 
     useEffect(() => {
         if (scrollRef.current) {
@@ -91,7 +97,7 @@ const CollaborativeChat: React.FC<CollaborativeChatProps> = ({ currentAnalysisCo
     }, [messages]);
 
     const sendMessage = async () => {
-        if (!input.trim() || !socketRef.current) return;
+        if (!input.trim()) return;
 
         const encrypted = await encryptMessage(input, sessionKey);
         const msgData = {
@@ -101,16 +107,16 @@ const CollaborativeChat: React.FC<CollaborativeChatProps> = ({ currentAnalysisCo
             context: currentAnalysisContext
         };
 
-        socketRef.current.emit('message', msgData);
+        socket.emit('message', msgData);
         setInput('');
     };
 
     const shareContext = async () => {
-        if (!currentAnalysisContext || !socketRef.current) return;
+        if (!currentAnalysisContext) return;
         const contextStr = `Sharing Analysis Context: ${currentAnalysisContext.title || 'Current Sequence'}`;
         const encrypted = await encryptMessage(contextStr, sessionKey);
 
-        socketRef.current.emit('message', {
+        socket.emit('message', {
             room,
             sender: user?.email,
             encrypted_payload: encrypted,

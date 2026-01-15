@@ -1,4 +1,13 @@
 import os
+
+# Production-only eventlet patching (avoid on Windows development)
+if os.name != 'nt':
+    try:
+        import eventlet
+        eventlet.monkey_patch()
+    except ImportError:
+        pass
+
 import random
 import datetime
 from flask import Flask, request, jsonify, make_response, redirect, Response
@@ -54,13 +63,15 @@ db = SQLAlchemy(app)
 jwt = JWTManager(app)
 mail = Mail(app)
 # Multi-origin CORS support for development and production
-# Production CORS setup
 frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:8080')
 allowed_origins = [url.strip() for url in os.environ.get('ALLOWED_ORIGINS', frontend_url).split(',')]
 if "http://localhost:8080" not in allowed_origins:
     allowed_origins.append("http://localhost:8080")
 
-socketio = SocketIO(app, cors_allowed_origins=allowed_origins, manage_session=False)
+# In production, we restrict origins. In dev, we are permissive to allow IP-based local access.
+socket_origins = "*" if (app.debug or os.environ.get('NODE_ENV') == 'development') else allowed_origins
+
+socketio = SocketIO(app, cors_allowed_origins=socket_origins, manage_session=False)
 CORS(app, supports_credentials=True, origins=allowed_origins)
 
 # Rate Limiting: 5 requests per minute as per requirements

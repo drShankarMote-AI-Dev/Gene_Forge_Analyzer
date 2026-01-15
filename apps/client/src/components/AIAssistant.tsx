@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { toast } from './ui/use-toast';
+import { API_BASE_URL as API_URL } from '@/utils/api';
 
 interface AIAssistantProps {
     analysisData: {
@@ -38,12 +39,11 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ analysisData }) => {
         setActiveModel('Routing...');
 
         try {
-            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
             const response = await fetch(`${API_URL}/ai/explain`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${sessionStorage.getItem('access_token')}` // Ensure auth if needed directly or via cookie (fetch credentials: include covers cookies usually)
+                    'Authorization': `Bearer ${sessionStorage.getItem('access_token')}`
                 },
                 credentials: 'include',
                 body: JSON.stringify({
@@ -80,7 +80,8 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ analysisData }) => {
 
             toast({ title: "Intelligence Deployed", description: "Analysis complete." });
 
-        } catch {
+        } catch (error) {
+            console.error("AI Insights Error:", error);
             toast({ title: "Analysis Failed", description: "AI stream interrupted.", variant: "destructive" });
         } finally {
             setLoading(false);
