@@ -1,150 +1,129 @@
 # 🧬 Gene Forge Analyzer
 
-[![Build Status](https://github.com/drShankarMote-AI-Dev/Gene_Forge_Analyzer/workflows/Build%20and%20Test/badge.svg)](https://github.com/drShankarMote-AI-Dev/Gene_Forge_Analyzer/actions)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
-[![React](https://img.shields.io/badge/react-18+-blue)](https://reactjs.org/)
-[![Python](https://img.shields.io/badge/python-3.9+-blue)](https://python.org/)
-[![Docker](https://img.shields.io/badge/docker-ready-blue)](https://www.docker.com/)
+> **The definitive Open-Source DNA Sequence Analysis & Interpretation Platform.**
+> A production-grade, full-stack monorepo designed for computational biology, CRISPR research, and molecular diagnostics.
 
-> **A comprehensive, production-ready DNA sequence analysis platform** designed for biologists, researchers, and students. Analyze genetic sequences with professional-grade tools, collaborate securely in real-time, and leverage AI-driven insights with a sleek, clinical-grade premium interface.
+[![Security: AES-256](https://img.shields.io/badge/Security-AES--256--GCM-blueviolet?style=for-the-badge)](https://en.wikipedia.org/wiki/Galois/Counter_Mode)
+[![Stack: Flask + React](https://img.shields.io/badge/Stack-Flask_%2B_React-blue?style=for-the-badge)](https://flask.palletsprojects.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
 
 ---
 
-## 📑 Table of Contents
+## 🚀 Overview
 
-- [Features](#-features)
-- [Quick Start](#-quick-start)
-- [Administrative Command Terminal](#-administrative-command-terminal)
-- [Project Structure](#-project-structure)
-- [Technologies](#-technologies-used)
-- [Installation](#-installation)
-- [Docker Setup](#-docker-setup)
-- [Usage Examples](#-usage-examples)
-- [Contributing](#-contributing)
-- [Deployment](#-deployment)
-- [License](#-license)
+Gene Forge Analyzer is a professional toolkit for researchers and bioinformaticians. It provides a suite of analytical tools for DNA sequence verification, structural inspection, and molecular precision, powered by a high-performance Flask backend and a premium React frontend.
+
+### ✨ Key Capabilities
+- **🔬 CRISPR Detection**: Identification of optimized gRNA targets and PAM site analysis.
+- **🧬 Structural Analysis**: GC Content, Reverse Complement, and Reading Frame mapping.
+- **🧪 Molecular Translation**: High-fidelity DNA to Protein sequence translation using standard codon tables.
+- **🏥 Medical Informatics**: SNP Detection, Restriction Site mapping, and mutation analysis.
+- **🤖 Biological Intelligence**: Advanced LLM Interpretation Layer (OpenAI GPT-4o / Gemini 2.0) for automated genomic insights.
 
 ---
 
-## 🌟 Features
+## 🏗️ Architecture
 
-### 🔬 Core Analysis Tools
-- 🧪 **Sequence Analysis** - Comprehensive base composition stats.
-- 📊 **GC Content Analysis** - Sliding window distribution charts with Recharts.
-- ✂️ **CRISPR & Restriction Sites** - Detect PAM sites and enzymatic cleavage points.
-- 🎯 **Primer Designer** - Optimize PCR primers with Tm calculation.
-- 🧬 **Translation & Alignment** - Amino acid conversion and sequence mutation inspection.
-- 🎨 **Motif Search** - High-speed pattern matching.
-
-### 🛡️ Security & Enterprise (Identity Orchestration)
-- 🔐 **Multi-Factor Authentication** - Secure login via Google OAuth 2.0 and Email OTP.
-- 👷 **Role-Based Access Control (RBAC)** - Clear distinction between standard Users, Researchers, and Admins.
-- 🔒 **End-to-End Encryption** - Secure data transmission and AES-256-GCM storage.
-- 📜 **Audit Logging** - Complete trail of forensic telemetry in a functional leaderboard view.
-- ⚖️ **Compliance Ready** - GDPR-compliant data purging and rigorous security policies.
-
-### 🤝 Collaboration & AI
-- 💬 **Secure Chat** - Real-time, encrypted collaborative workspace for research teams.
-- 🤖 **AI Assistant** - "Biological Intelligence" engine offering explanations in Student or Researcher modes.
-- 📁 **Project Management** - Save analysis sessions, manage version history, and restore snapshots.
-- 🖥️ **AI Gateway** - Dedicated monitoring of neural health and API consumption.
-
----
-
-## 🚀 Quick Start
-
-Initialize the complete research stack from the root directory:
-
-```bash
-# 1. Initialize environment
-npm run install:all
-
-# 2. Launch Local Analysis Engine + Dashboard (Concurrent)
-npm run dev
-
-# 3. Establish Admin Access (CLI)
-python admin.py reset --email admin@geneforge.com --password admin
+```mermaid
+graph TD
+    User((Researcher)) -->|HTTPS/WSS| Frontend[React Premium UI]
+    Frontend -->|REST API| Backend[Flask API Engine]
+    Backend -->|E2EE| DB[(Encrypted SQLite/Postgres)]
+    Backend -->|Streaming| AI[AI Interpretation Engine]
+    AI -->|OpenAI/Gemini| Insights[Genomic Reports]
 ```
 
----
-
-## 🖥️ Administrative Command Terminal
-
-The `admin.py` utility provides a unified interface for managing the laboratory cluster.
-
-| Command | Description |
-|---------|-------------|
-| `python admin.py status` | Monitor real-time telemetry, node counts, and neural health. |
-| `python admin.py list`   | Inventory all accounts with administrative permissions. |
-| `python admin.py reset`  | Securely reset credentials or create a new Admin node. |
-| `python admin.py fix`    | Synchronize and force role permissions for a node. |
+### Tech Stack
+- **Frontend**: React 18, Vite, TypeScript, Tailwind CSS, Lucide Icons, Recharts.
+- **Backend**: Python 3.11, Flask, SQLAlchemy, JWT-Extended, Socket.IO.
+- **Security**: AES-256-GCM Encryption, BCrypt Hashing, Secure Cookies.
+- **AI**: OpenAI GPT-4o / Google Gemini 2.0 Flash Routing.
 
 ---
 
-## 🏗️ Monorepo Architecture
+## 🛠️ Local Development
 
-- **`apps/client`**: High-fidelity React + Vite Research Dashboard. (Port 8080)
-- **`apps/server`**: Python (Flask) Genomic Analysis Engine with AES-256-GCM. (Port 5000)
-- **`admin.py`**: Unified system management CLI.
+### Prerequisites
+- **Node.js**: v20+
+- **Python**: 3.11+
+- **API Keys**: OpenAI or Google Gemini (optional for AI features)
+
+### Quick Start (The "Turbo" Way)
+
+1. **Install and Setup**:
+   ```bash
+   npm run install:all
+   ```
+
+2. **Configure Environment**:
+   ```bash
+   cp .env.example .env
+   cp apps/backend/.env.example apps/backend/.env
+   cp apps/frontend/.env.example apps/frontend/.env
+   ```
+   *Update the `.env` files with your local database URL and AI API keys.*
+
+3. **Launch Everything**:
+   ```bash
+   npm run dev
+   ```
+   *This starts the Flask server and Vite client concurrently with unified logging.*
 
 ---
 
-## 🌐 Deployment
+## 🐳 Docker Orchestration
 
-### Vercel / Render Compatibility
-The application is pre-configured to handle modern deployment environments. 
+We provide a streamlined Docker experience for both development and production.
 
-- **Frontend**: The `vite.config.ts` includes `allowedHosts` for `.vercel.app` and `gene-forge-analyzer.onrender.com` to prevent "Host Blocked" errors.
-- **Environment**: Use the `.env.example` as a template for your production environment variables.
-
-### Production Startup
-To run the backend in a production environment (using Gunicorn):
+### Development (Orchestrated)
 ```bash
-npm run start:server
-```
-
-Ensure the following environment variables are set in production:
-- `VITE_API_URL`: Fully qualified URL to your backend API (e.g., `https://api.yourdomain.com/api`).
-- `ALLOWED_ORIGINS`: Comma-separated list of allowed frontend URLs for CORS.
-- `JWT_COOKIE_SECURE`: Set to `True` for HTTPS.
-
----
-
-## 🛠️ Technologies Used
-
-### Frontend Stack
-- **Framework**: React 18 + Vite (SWC)
-- **Styling**: Tailwind CSS + Shadcn UI (Clinical Theme)
-- **Types**: TypeScript 5+
-- **State**: React Query + Context API
-- **Visualization**: Recharts
-
-### Backend Stack
-- **Framework**: Python Flask
-- **Database**: SQLite (Development) / PostgreSQL (Production)
-- **Security**: PyCryptodome (AES-GCM), JWT-Extended
-- **Real-time**: Flask-SocketIO
-
----
-
-## 🐳 Docker Setup
-
-### Docker Compose (Recommended)
-
-```bash
-# Start the application
 npm run docker:up
+```
+*Access: Frontend at [localhost:3000](http://localhost:3000), Backend at [localhost:5000](http://localhost:5000)*
 
-# Rebuild after changes
-# docker-compose up -d --build
+### Production (Unified)
+The root `Dockerfile` creates a single, optimized image where the Flask server serves the compiled React frontend, ideal for platforms like Render or Railway.
+
+```bash
+docker build -t geneforge-prod .
+docker run -p 5000:5000 --env-file .env geneforge-prod
 ```
 
 ---
 
-## 👨‍💻 Authors & Contributors
+## 🔒 Security & Privacy
 
-- **Project Lead**: Dr. Shankar Mote - [GitHub](https://github.com/drShankarMote-AI-Dev)
+Gene Forge Analyzer is built with a **Security-First** mindset:
+- **Genomic Privacy**: All DNA sequences are encrypted at rest using user-specific master salts.
+- **E2E Encryption**: Real-time collaboration channels are encrypted on the client side.
+- **Role-Based Access**: Granular control for Admin vs. Researcher roles.
+- **Audit Logging**: Every sensitive action (data export, AI usage) is logged for security review.
 
-**Happy analyzing! 🧬**
-*Last updated: January 15, 2026*
+---
+
+## 🎨 Professional Aesthetics
+
+This application isn't just functional—it's beautiful.
+- **Glassmorphism UI**: A modern, translucent design system.
+- **Real-time Visualizations**: Interactive GC-content distribution charts.
+- **Micro-interactions**: High-fidelity animations for neural processing states.
+- **Responsive Layout**: Designed for both desktop workstations and laboratory tablets.
+
+---
+
+## 🤝 Contributing
+
+Contributions are what make the open-source community an amazing place to learn, inspire, and create.
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+**Maintained by drShankarMote-AI-Dev**

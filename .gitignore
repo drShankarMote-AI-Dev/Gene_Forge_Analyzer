@@ -96,6 +96,6 @@ instance/
 .env
 
 # Monorepo
-apps/server/instance
-apps/server/.env
-apps/client/.env
+apps/backend/instance
+apps/backend/.env
+apps/frontend/.env

@@ -1,246 +1,421 @@
-# Deployment Guide
+# 🧬 Gene Forge Analyzer - Deployment Guide
 
-This guide covers deploying Gene Forge Analyzer to various platforms.
+Complete guide for deploying the Gene Forge Analyzer monorepo to production.
 
-## Prerequisites
+## 📋 Table of Contents
 
-- Docker installed (for containerized deployment)
-- Node.js >= 16.0.0
-- Account on your chosen platform
+- [Architecture Overview](#architecture-overview)
+- [Prerequisites](#prerequisites)
+- [Local Development](#local-development)
+- [Docker Deployment](#docker-deployment)
+- [Vercel Deployment (Frontend)](#vercel-deployment-frontend)
+- [Render Deployment (Backend)](#render-deployment-backend)
+- [Environment Variables](#environment-variables)
+- [Troubleshooting](#troubleshooting)
 
-## Local Docker Deployment
+---
 
-### Build and Run
+## 🏗️ Architecture Overview
 
-```bash
-# Build the Docker image
-docker build -t gene-forge-analyzer .
+The Gene Forge Analyzer is a **monorepo** with two main applications:
 
-# Run the container
-docker run -p 5173:5173 gene-forge-analyzer
-
-# Access the application
-# Open http://localhost:5173 in your browser
+```
+Gene_Forge_Analyzer/
+├── apps/
+│   ├── frontend/          # React + Vite + TypeScript
+│   └── backend/           # Flask + Python
+├── Dockerfile.frontend    # Production frontend build
+├── Dockerfile.backend     # Production backend build
+├── Dockerfile.fullstack   # Combined deployment (optional)
+├── docker-compose.yml     # Local development with Docker
+├── vercel.json            # Vercel deployment config
+└── render.yaml            # Render deployment config
 ```
 
-### Using Docker Compose
+**Deployment Strategy:**
+- **Frontend**: Vercel (Static hosting with CDN)
+- **Backend**: Render (Python web service)
+- **Alternative**: Docker Compose (Self-hosted)
+
+---
+
+## ✅ Prerequisites
+
+### Required Software
+- **Node.js** >= 18.0.0
+- **Python** >= 3.11
+- **npm** >= 10.0.0
+- **Docker** (optional, for containerized deployment)
+
+### Required Accounts
+- [Vercel Account](https://vercel.com) (for frontend)
+- [Render Account](https://render.com) (for backend)
+- [Google Cloud Console](https://console.cloud.google.com/) (for OAuth)
+- [OpenAI API](https://platform.openai.com/) (for AI features)
+
+---
+
+## 🚀 Local Development
+
+### 1. Install All Dependencies
 
 ```bash
-# Start the service
-docker-compose up -d
+# Install both frontend and backend dependencies
+npm run install:all
+```
 
-# Stop the service
+This command will:
+- Install root dependencies
+- Install frontend dependencies (`apps/frontend`)
+- Install backend dependencies (`apps/backend`)
+
+### 2. Configure Environment Variables
+
+#### Frontend (`apps/frontend/.env`)
+```bash
+cp apps/frontend/.env.example apps/frontend/.env
+```
+
+Edit `apps/frontend/.env`:
+```env
+VITE_API_URL=/api
+VITE_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+```
+
+#### Backend (`apps/backend/.env`)
+```bash
+cp apps/backend/.env.example apps/backend/.env
+```
+
+Edit `apps/backend/.env`:
+```env
+SECRET_KEY=your-secret-key
+JWT_SECRET_KEY=your-jwt-secret
+DATABASE_URL=sqlite:///geneforge.db
+FRONTEND_URL=http://localhost:5173
+ALLOWED_ORIGINS=http://localhost:5173
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+OPENAI_API_KEY=your-openai-key
+```
+
+### 3. Run Development Servers
+
+#### Option A: Run Both Servers Concurrently
+```bash
+npm run dev
+```
+
+This starts:
+- Backend at `http://localhost:5000`
+- Frontend at `http://localhost:5173`
+
+#### Option B: Run Servers Separately
+```bash
+# Terminal 1 - Backend
+npm run dev:server
+
+# Terminal 2 - Frontend
+npm run dev:client
+```
+
+### 4. Access the Application
+
+- **Frontend**: http://localhost:5173
+- **Backend API**: http://localhost:5000/api
+- **Admin Login**: http://localhost:5173/admin
+
+**Default Admin Credentials:**
+- Email: `admin@geneforge.com`
+- Password: `admin123`
+
+---
+
+## 🐳 Docker Deployment
+
+### Option 1: Docker Compose (Recommended for Local/Self-Hosted)
+
+```bash
+# Build and start all services
+npm run docker:build
+npm run docker:up
+
+# Or use docker-compose directly
+docker-compose up --build
+```
+
+**Services:**
+- Frontend: http://localhost:3000
+- Backend: http://localhost:5000
+
+**Stop Services:**
+```bash
 docker-compose down
-
-# View logs
-docker-compose logs -f gene-forge-analyzer
 ```
 
-## Cloud Deployment
+### Option 2: Individual Dockerfiles
 
-### Vercel (Recommended for Vite apps)
+#### Build Frontend Only
+```bash
+docker build -f Dockerfile.frontend -t geneforge-frontend .
+docker run -p 3000:80 geneforge-frontend
+```
+
+#### Build Backend Only
+```bash
+docker build -f Dockerfile.backend -t geneforge-backend .
+docker run -p 5000:5000 \
+  -e DATABASE_URL=sqlite:///geneforge.db \
+  -e SECRET_KEY=your-secret \
+  geneforge-backend
+```
+
+### Option 3: Fullstack Dockerfile
 
 ```bash
-# Install Vercel CLI
+docker build -f Dockerfile.fullstack -t geneforge-fullstack .
+docker run -p 80:80 -p 5000:5000 geneforge-fullstack
+```
+
+---
+
+## ☁️ Vercel Deployment (Frontend)
+
+### 1. Prepare Frontend
+
+The frontend is configured in `apps/frontend/vercel.json`.
+
+### 2. Deploy to Vercel
+
+#### Via Vercel CLI
+```bash
+cd apps/frontend
 npm install -g vercel
-
-# Login and deploy
-vercel login
-vercel
-
-# Preview the deployment
 vercel --prod
 ```
 
-**vercel.json** configuration:
+#### Via Vercel Dashboard
+1. Go to [Vercel Dashboard](https://vercel.com/dashboard)
+2. Click **"New Project"**
+3. Import your GitHub repository
+4. Set **Root Directory**: `apps/frontend`
+5. **Framework Preset**: Vite
+6. Click **Deploy**
+
+### 3. Configure Environment Variables
+
+In Vercel Dashboard → Project → Settings → Environment Variables:
+
+```
+VITE_API_URL = https://gene-forge-analyzer-ld7t.onrender.com
+VITE_GOOGLE_CLIENT_ID = your-google-client-id.apps.googleusercontent.com
+```
+
+### 4. Update Google OAuth Redirect URIs
+
+In [Google Cloud Console](https://console.cloud.google.com/):
+1. Go to **APIs & Services** → **Credentials**
+2. Edit your OAuth 2.0 Client ID
+3. Add **Authorized Redirect URIs**:
+   ```
+   https://your-app.vercel.app/auth/callback
+   ```
+
+### 5. Redeploy
+
+After setting environment variables, trigger a redeploy in Vercel.
+
+---
+
+## 🔧 Render Deployment (Backend)
+
+### 1. Prepare Backend
+
+The backend is configured in `render.yaml`.
+
+### 2. Deploy to Render
+
+#### Via Render Dashboard
+1. Go to [Render Dashboard](https://dashboard.render.com/)
+2. Click **"New +"** → **"Blueprint"**
+3. Connect your GitHub repository
+4. Render will detect `render.yaml` automatically
+5. Click **"Apply"**
+
+#### Manual Web Service Creation
+1. Click **"New +"** → **"Web Service"**
+2. Connect your repository
+3. Configure:
+   - **Name**: `gene-forge-backend`
+   - **Root Directory**: `apps/backend`
+   - **Environment**: `Python 3`
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `gunicorn app:app --workers=4 --bind=0.0.0.0:$PORT --timeout=120`
+
+### 3. Configure Environment Variables
+
+In Render Dashboard → Service → Environment:
+
+```
+SECRET_KEY = <auto-generated>
+JWT_SECRET_KEY = <auto-generated>
+DATABASE_URL = sqlite:///geneforge.db
+FRONTEND_URL = https://your-app.vercel.app
+ALLOWED_ORIGINS = https://your-app.vercel.app
+JWT_COOKIE_SECURE = True
+JWT_COOKIE_SAMESITE = None
+NODE_ENV = production
+FLASK_ENV = production
+OPENAI_API_KEY = your-openai-key
+GEMINI_API_KEY = your-gemini-key
+EMAIL_USERNAME = your-email@gmail.com
+EMAIL_PASSWORD = your-gmail-app-password
+GOOGLE_CLIENT_ID = your-google-client-id
+GOOGLE_CLIENT_SECRET = your-google-client-secret
+```
+
+### 4. Get Backend URL
+
+After deployment, copy your Render backend URL:
+```
+https://gene-forge-analyzer-ld7t.onrender.com
+```
+
+### 5. Update Frontend Configuration
+
+Update `apps/frontend/vercel.json`:
 ```json
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist"
+  "env": {
+    "VITE_API_URL": "https://your-render-backend.onrender.com"
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://your-render-backend.onrender.com/api/$1"
+    }
+  ]
 }
 ```
 
-### Netlify
+Redeploy frontend on Vercel.
 
+---
+
+## 🔐 Environment Variables
+
+### Frontend Variables
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `VITE_API_URL` | Backend API URL | `/api` (local) or `https://backend.onrender.com` (prod) |
+| `VITE_GOOGLE_CLIENT_ID` | Google OAuth Client ID | `xxx.apps.googleusercontent.com` |
+| `VITE_APP_NAME` | Application name | `Gene Forge Analyzer` |
+
+### Backend Variables
+
+| Variable | Description | Required | Example |
+|----------|-------------|----------|---------|
+| `SECRET_KEY` | Flask secret key | ✅ | Auto-generated on Render |
+| `JWT_SECRET_KEY` | JWT signing key | ✅ | Auto-generated on Render |
+| `DATABASE_URL` | Database connection | ✅ | `sqlite:///geneforge.db` |
+| `FRONTEND_URL` | Frontend URL for CORS | ✅ | `https://app.vercel.app` |
+| `ALLOWED_ORIGINS` | CORS allowed origins | ✅ | `https://app.vercel.app` |
+| `JWT_COOKIE_SECURE` | Use secure cookies | ✅ | `True` (prod), `False` (dev) |
+| `JWT_COOKIE_SAMESITE` | Cookie SameSite policy | ✅ | `None` (prod), `Lax` (dev) |
+| `OPENAI_API_KEY` | OpenAI API key | ❌ | `sk-...` |
+| `GEMINI_API_KEY` | Google Gemini API key | ❌ | `AI...` |
+| `EMAIL_USERNAME` | SMTP email username | ❌ | `your-email@gmail.com` |
+| `EMAIL_PASSWORD` | SMTP email password | ❌ | Gmail App Password |
+| `GOOGLE_CLIENT_ID` | Google OAuth Client ID | ❌ | `xxx.apps.googleusercontent.com` |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth Secret | ❌ | `GOCSPX-...` |
+
+---
+
+## 🐛 Troubleshooting
+
+### Admin Login Returns 404
+
+**Problem**: Admin login fails with "Not Found" error.
+
+**Solution**:
+1. Ensure backend is running: `http://localhost:5000/health`
+2. Check `VITE_API_URL` in frontend `.env`
+3. Verify CORS settings in backend `.env`
+
+### CORS Errors in Production
+
+**Problem**: API calls blocked by CORS policy.
+
+**Solution**:
+1. Update `ALLOWED_ORIGINS` in Render environment variables
+2. Include your Vercel domain: `https://your-app.vercel.app`
+3. Set `JWT_COOKIE_SECURE=True` and `JWT_COOKIE_SAMESITE=None`
+
+### Google OAuth Not Working
+
+**Problem**: Google sign-in fails or redirects incorrectly.
+
+**Solution**:
+1. Verify `GOOGLE_CLIENT_ID` matches in both frontend and backend
+2. Add authorized redirect URIs in Google Cloud Console:
+   - `http://localhost:5173/auth/callback` (dev)
+   - `https://your-app.vercel.app/auth/callback` (prod)
+3. Ensure `GOOGLE_CLIENT_SECRET` is set in backend
+
+### Email OTP Not Sending
+
+**Problem**: OTP emails not received.
+
+**Solution**:
+1. Use Gmail App Password, not regular password
+2. Generate at: https://myaccount.google.com/apppasswords
+3. Set `EMAIL_USERNAME` and `EMAIL_PASSWORD` in backend
+4. Verify `EMAIL_HOST=smtp.gmail.com` and `EMAIL_PORT=587`
+
+### Docker Build Fails
+
+**Problem**: Docker build errors.
+
+**Solution**:
 ```bash
-# Install Netlify CLI
-npm install -g netlify-cli
-
-# Login and deploy
-netlify login
-netlify deploy --prod --dir=dist
-```
-
-**netlify.toml** configuration:
-```toml
-[build]
-  command = "npm run build"
-  publish = "dist"
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-```
-
-### GitHub Pages
-
-```bash
-# Build the application
-npm run build
-
-# Deploy using GitHub Pages action
-git add .
-git commit -m "Deploy to GitHub Pages"
-git push origin main
-```
-
-Update `vite.config.ts`:
-```typescript
-export default defineConfig({
-  base: '/gene-forge-analyzer/',
-  // ... rest of config
-})
-```
-
-### Docker Hub
-
-```bash
-# Login to Docker Hub
-docker login
-
-# Tag the image
-docker tag gene-forge-analyzer drShankarMote-AI-Dev/gene-forge-analyzer:latest
-docker tag gene-forge-analyzer drShankarMote-AI-Dev/gene-forge-analyzer:1.0.0
-
-# Push to Docker Hub
-docker push drShankarMote-AI-Dev/gene-forge-analyzer:latest
-docker push drShankarMote-AI-Dev/gene-forge-analyzer:1.0.0
-```
-
-Then anyone can run:
-```bash
-docker run -p 5173:5173 drShankarMote-AI-Dev/Gene_Forge_Analyzer
-```
-
-### AWS Deployment
-
-#### Using ECS with Docker
-
-1. Create ECR repository
-2. Push Docker image to ECR
-3. Create ECS task definition
-4. Deploy with ECS service
-
-#### Using S3 + CloudFront
-
-```bash
-# Build the app
-npm run build
-
-# Sync to S3
-aws s3 sync dist/ s3://your-bucket-name --delete
-
-# Invalidate CloudFront cache
-aws cloudfront create-invalidation --distribution-id YOUR_DISTRIBUTION_ID --paths "/*"
-```
-
-### Google Cloud Platform (GCP)
-
-```bash
-# Install gcloud CLI
-# Initialize
-gcloud init
-
-# Build and push to Cloud Build
-gcloud builds submit --tag gcr.io/your-project/gene-forge-analyzer
-
-# Deploy to Cloud Run
-gcloud run deploy gene-forge-analyzer \
-  --image gcr.io/your-project/gene-forge-analyzer \
-  --platform managed \
-  --region us-central1 \
-  --allow-unauthenticated \
-  --port 5173
-```
-
-### Azure App Service
-
-```bash
-# Login to Azure
-az login
-
-# Create resource group
-az group create --name gene-forge-rg --location eastus
-
-# Create App Service plan
-az appservice plan create --name gene-forge-plan --resource-group gene-forge-rg --is-linux --sku F1
-
-# Create web app
-az webapp create --resource-group gene-forge-rg --plan gene-forge-plan --name gene-forge-analyzer
-
-# Deploy
-az webapp deployment source config --resource-group gene-forge-rg --name gene-forge-analyzer --repo-url https://github.com/drShankarMote-AI-Dev/Gene_Forge_Analyzer --branch main --manual-integration
-```
-
-## Environment Variables
-
-Create a `.env.production` file for production settings:
-
-```env
-NODE_ENV=production
-VITE_API_URL=https://api.example.com
-```
-
-## Performance Optimization
-
-1. **Enable Gzip compression** in your web server
-2. **Use CDN** for static assets
-3. **Enable caching headers** for optimal performance
-4. **Monitor bundle size** - check with `npm run build`
-
-## Monitoring & Logging
-
-- Set up application monitoring (e.g., Sentry, LogRocket)
-- Monitor error rates and user experience
-- Set up alerting for critical issues
-
-## Security Checklist
-
-- [ ] Use HTTPS for all connections
-- [ ] Keep dependencies updated
-- [ ] Enable CORS properly
-- [ ] Use environment variables for secrets
-- [ ] Implement rate limiting
-- [ ] Regular security audits
-
-## Troubleshooting
-
-### Port Already in Use
-```bash
-# Kill process on port 5173
-lsof -ti:5173 | xargs kill -9  # macOS/Linux
-netstat -ano | findstr :5173  # Windows
-```
-
-### Docker Build Issues
-```bash
-# Clear Docker cache
+# Clean Docker cache
 docker system prune -a
 
 # Rebuild without cache
-docker build --no-cache -t gene-forge-analyzer .
+docker-compose build --no-cache
 ```
 
-### Application Not Responding
-1. Check logs: `docker-compose logs`
-2. Verify port mappings
-3. Check environment variables
-4. Restart the container
+### Render Deployment Timeout
 
-## Support
+**Problem**: Render service times out during deployment.
 
-For deployment issues:
-- Check platform-specific documentation
-- Open an GitHub issue
-- Consult the troubleshooting section
+**Solution**:
+1. Check build logs in Render dashboard
+2. Ensure `requirements.txt` is in `apps/backend/`
+3. Increase timeout in `render.yaml`:
+   ```yaml
+   startCommand: "gunicorn app:app --timeout=120"
+   ```
+
+---
+
+## 📚 Additional Resources
+
+- [Vite Documentation](https://vitejs.dev/)
+- [Flask Documentation](https://flask.palletsprojects.com/)
+- [Vercel Documentation](https://vercel.com/docs)
+- [Render Documentation](https://render.com/docs)
+- [Docker Documentation](https://docs.docker.com/)
+
+---
+
+## 🆘 Support
+
+For issues and questions:
+- GitHub Issues: https://github.com/drShankarMote-AI-Dev/Gene_Forge_Analyzer/issues
+- Email: admin@geneforge.com
+
+---
+
+**Last Updated**: January 2026

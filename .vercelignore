@@ -1,0 +1,8 @@
+apps/backend
+node_modules
+.git
+scripts
+docs
+Dockerfile*
+docker-compose.yml
+render.yaml

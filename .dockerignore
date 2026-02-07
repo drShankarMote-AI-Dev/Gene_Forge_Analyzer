@@ -1,48 +1,89 @@
-# Dependencies
-node_modules
-npm-debug.log
-yarn-error.log
+# Git and Version Control
+.git
+.gitignore
+.gitattributes
+.github
 
-# Production
+# Node / Frontend
+node_modules
+**/node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.npm
+apps/frontend/dist
+apps/frontend/build
+apps/frontend/.next
+apps/frontend/.turbo
+
+# Python / Backend
+__pycache__
+**/__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+.toast
+.mypy_cache
+.pytest_cache
+.hypothesis
+.noserc
+.tox
+apps/backend/instance
+apps/backend/.pytest_cache
+*.db
+*.sqlite
+*.sqlite3
+
+# Build Outputs
 dist
 build
+out
+*.exe
+*.bin
 
-# Misc
-.DS_Store
+# Environment / Secrets
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+*.pem
+*.key
+**/*.env
+**/*.env.local
 
-# IDE
+# IDEs and Editors
 .vscode
 .idea
 *.swp
 *.swo
 *~
 .project
+.settings
 .classpath
-*.c9/
-*.sublime-workspace
+.DS_Store
+Thumbs.db
 
-# Git
-.git
-.gitignore
-.gitattributes
+# Testing and Coverage
+coverage
+.nyc_output
+htmlcov
+.tox
+*.test.js
+*.spec.js
+cypress/screenshots
+cypress/videos
 
-# CI
-.github
-.gitlab-ci.yml
-.travis.yml
-
-# Docker
-Dockerfile*
-docker-compose*
-.dockerignore
-
-# Other
-*.md
-LICENSE
-.editorconfig
-.eslintignore
+# Temporary Files
+tmp
+temp
+*.tmp
+*.bak
+*.swp
