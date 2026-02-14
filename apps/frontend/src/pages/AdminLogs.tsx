@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '@/utils/api';
+import { API_BASE_URL, apiFetch } from '@/utils/api';
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -69,16 +69,13 @@ const AdminLogs = () => {
     const fetchLogs = async (page: number) => {
         setLoading(true);
         try {
-            const res = await fetch(`${API_BASE_URL}/admin/logs?page=${page}&per_page=50`, { credentials: 'include' });
-            if (res.ok) {
-                const json = await res.json();
-                setLogs(json.logs);
-                setPagination({
-                    current_page: json.current_page,
-                    total: json.total,
-                    pages: json.pages
-                });
-            }
+            const json = await apiFetch(`/admin/logs?page=${page}&per_page=50`);
+            setLogs(json.logs);
+            setPagination({
+                current_page: json.current_page,
+                total: json.total,
+                pages: json.pages
+            });
         } catch (e: unknown) {
             console.error(e);
         } finally {

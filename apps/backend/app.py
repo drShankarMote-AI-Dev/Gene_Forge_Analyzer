@@ -127,6 +127,31 @@ app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('EMAIL_FROM', ('Gene Forge An
 
 db = SQLAlchemy(app)
 jwt = JWTManager(app)
+
+@jwt.invalid_token_loader
+def invalid_token_callback(error):
+    resp = jsonify({
+        'msg': 'Neural access token malformed or corrupted. Session reset.',
+        'error': 'invalid_token',
+        'details': str(error)
+    })
+    unset_jwt_cookies(resp)
+    return resp, 401
+
+@jwt.expired_token_loader
+def expired_token_callback(jwt_header, jwt_payload):
+    return jsonify({
+        'msg': 'Neural access session has expired',
+        'error': 'token_expired'
+    }), 401
+
+@jwt.unauthorized_loader
+def missing_token_callback(error):
+    return jsonify({
+        'msg': 'Request requires valid neural credentials',
+        'error': 'authorization_required'
+    }), 401
+
 mail = Mail(app)
 # Multi-origin CORS support for development and production
 frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:5173')

@@ -37,7 +37,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 return { logged_in: false };
             }
         },
-        retry: false,
+        retry: 2,
+        retryDelay: 1000,
     });
 
     const sendOtpMutation = useMutation({
@@ -51,20 +52,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 const id = setTimeout(() => controller.abort(), 8000); // 8s timeout
 
                 try {
-                    const resp = await fetch(`${API_URL}/auth/otp/send`, {
+                    return await apiFetch('/auth/otp/send', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        credentials: 'include',
                         body: JSON.stringify({ email }),
                         signal: controller.signal
                     });
-                    clearTimeout(id);
-
-                    if (!resp.ok) {
-                        const err = await resp.json().catch(() => ({ msg: 'Server error' }));
-                        throw new Error(err.msg || `Server error (${resp.status})`);
-                    }
-                    return resp.json();
                 } catch (error) {
                     clearTimeout(id);
                     const err = error as Error;
@@ -108,17 +100,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const loginMutation = useMutation({
         mutationFn: async ({ email, code }: { email: string; code: string }) => {
-            const resp = await fetch(`${API_URL}/auth/otp/verify`, {
+            return await apiFetch('/auth/otp/verify', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
                 body: JSON.stringify({ email, code }),
             });
-            if (!resp.ok) {
-                const err = await resp.json();
-                throw new Error(err.msg || 'Invalid OTP');
-            }
-            return resp.json();
         },
         onSuccess: (data: any) => {
             if (data.access_token) {
@@ -139,9 +124,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const logoutMutation = useMutation({
         mutationFn: async () => {
-            await fetch(`${API_URL}/auth/logout`, {
-                method: 'POST',
-                credentials: 'include',
+            await apiFetch('/auth/logout', {
+                method: 'POST'
             });
         },
         onSuccess: () => {
@@ -153,17 +137,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const googleLoginMutation = useMutation({
         mutationFn: async (token: string) => {
-            const resp = await fetch(`${API_URL}/auth/google/verify-token`, {
+            return await apiFetch('/auth/google/verify-token', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
                 body: JSON.stringify({ token }),
             });
-            if (!resp.ok) {
-                const err = await resp.json();
-                throw new Error(err.msg || 'Google login verification failed');
-            }
-            return resp.json();
         },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         onSuccess: (data: any) => {
@@ -201,30 +178,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const loginWithPasswordMutation = useMutation({
         mutationFn: async ({ email, password }: { email: string; password: string }) => {
-            const resp = await fetch(`${API_URL}/auth/admin/login`, {
+            return await apiFetch('/auth/admin/login', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
                 body: JSON.stringify({ email, password }),
             });
-            const contentType = resp.headers.get("content-type");
-            if (!resp.ok) {
-                let errorMessage = 'Invalid admin credentials';
-                if (contentType && contentType.includes("application/json")) {
-                    const err = await resp.json();
-                    errorMessage = err.msg || errorMessage;
-                } else {
-                    const text = await resp.text();
-                    console.error("Non-JSON Error Response:", text);
-                    errorMessage = `Server Error: ${resp.status}`;
-                }
-                throw new Error(errorMessage);
-            }
-
-            if (contentType && contentType.includes("application/json")) {
-                return resp.json();
-            }
-            return { success: true };
         },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         onSuccess: (data: any) => {

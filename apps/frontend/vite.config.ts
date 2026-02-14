@@ -10,8 +10,10 @@ const __dirname = dirname(__filename);
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }: ConfigEnv) => {
-  const rootDir = path.resolve(__dirname, "../../");
-  const env = loadEnv(mode, rootDir, "");
+  // Load env from both root (monorepo) and local (frontend)
+  const envRoot = loadEnv(mode, path.resolve(__dirname, "../../"), "");
+  const envLocal = loadEnv(mode, __dirname, "");
+  const env = { ...envRoot, ...envLocal };
 
   return {
     server: {

@@ -26,9 +26,15 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
         ...options.headers,
     };
 
-    if (token) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (headers as any)['Authorization'] = `Bearer ${token}`;
+    if (token && token !== 'undefined' && token !== 'null') {
+        // Validate JWT format (basic check: 3 parts)
+        if (token.split('.').length === 3) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (headers as any)['Authorization'] = `Bearer ${token}`;
+        } else {
+            console.warn("Invalid JWT token format found in localStorage. Clearing.");
+            localStorage.removeItem('access_token');
+        }
     }
 
     const response = await fetch(url, {

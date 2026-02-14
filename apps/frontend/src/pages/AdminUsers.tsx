@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '@/utils/api';
+import { API_BASE_URL, apiFetch } from '@/utils/api';
 import { Card } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -99,11 +99,8 @@ const AdminUsers = () => {
     const fetchUsers = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`${API_BASE_URL}/admin/users`, { credentials: 'include' });
-            if (res.ok) {
-                const json = await res.json();
-                setUsers(json);
-            }
+            const json = await apiFetch('/admin/users');
+            setUsers(json);
         } catch (e: unknown) {
             console.error(e);
             toast({ title: "Sync Failed", description: "Could not retrieve personnel registry", variant: "destructive" });
@@ -116,27 +113,20 @@ const AdminUsers = () => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            const res = await fetch(`${API_BASE_URL}/admin/users/create`, {
+            const data = await apiFetch('/admin/users/create', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
                 body: JSON.stringify({
                     email: newUserEmail,
                     role: newUserRole
                 })
             });
-            const data = await res.json();
-            if (res.ok) {
-                toast({ title: "Success", description: data.msg });
-                setIsAddUserOpen(false);
-                setNewUserEmail('');
-                setNewUserRole('user');
-                fetchUsers();
-            } else {
-                toast({ title: "Registration Failed", description: data.msg, variant: "destructive" });
-            }
-        } catch {
-            toast({ title: "Error", description: "Communication error with neural server", variant: "destructive" });
+            toast({ title: "Success", description: data.msg });
+            setIsAddUserOpen(false);
+            setNewUserEmail('');
+            setNewUserRole('user');
+            fetchUsers();
+        } catch (err: any) {
+            toast({ title: "Registration Failed", description: err.message, variant: "destructive" });
         } finally {
             setIsSubmitting(false);
         }
@@ -147,25 +137,18 @@ const AdminUsers = () => {
         if (!selectedUser) return;
         setIsSubmitting(true);
         try {
-            const res = await fetch(`${API_BASE_URL}/admin/users/${selectedUser.id}`, {
+            const data = await apiFetch(`/admin/users/${selectedUser.id}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
                 body: JSON.stringify({
                     role: newUserRole,
                     email: newUserEmail
                 })
             });
-            const data = await res.json();
-            if (res.ok) {
-                toast({ title: "Update Successful", description: data.msg });
-                setIsEditUserOpen(false);
-                fetchUsers();
-            } else {
-                toast({ title: "Update Failed", description: data.msg, variant: "destructive" });
-            }
-        } catch {
-            toast({ title: "Error", description: "Neural uplink failed during update", variant: "destructive" });
+            toast({ title: "Update Successful", description: data.msg });
+            setIsEditUserOpen(false);
+            fetchUsers();
+        } catch (err: any) {
+            toast({ title: "Update Failed", description: err.message, variant: "destructive" });
         } finally {
             setIsSubmitting(false);
         }
@@ -175,20 +158,14 @@ const AdminUsers = () => {
         if (!selectedUser) return;
         setIsSubmitting(true);
         try {
-            const res = await fetch(`${API_BASE_URL}/admin/users/${selectedUser.id}`, {
-                method: 'DELETE',
-                credentials: 'include'
+            const data = await apiFetch(`/admin/users/${selectedUser.id}`, {
+                method: 'DELETE'
             });
-            const data = await res.json();
-            if (res.ok) {
-                toast({ title: "Personnel Purged", description: data.msg });
-                setIsDeleteConfirmOpen(false);
-                fetchUsers();
-            } else {
-                toast({ title: "Purge Blocked", description: data.msg, variant: "destructive" });
-            }
-        } catch {
-            toast({ title: "Error", description: "Node extraction failed", variant: "destructive" });
+            toast({ title: "Personnel Purged", description: data.msg });
+            setIsDeleteConfirmOpen(false);
+            fetchUsers();
+        } catch (err: any) {
+            toast({ title: "Purge Blocked", description: err.message, variant: "destructive" });
         } finally {
             setIsSubmitting(false);
         }

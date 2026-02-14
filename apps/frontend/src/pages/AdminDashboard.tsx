@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '@/utils/api';
+import { API_BASE_URL, apiFetch } from '@/utils/api';
 import { Users, FolderKanban, Cpu, Lock, ArrowUpRight, History, Activity, Zap, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from "@/hooks/use-toast";
@@ -55,11 +55,8 @@ const AdminDashboard = () => {
     const fetchStats = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`${API_BASE_URL}/admin/system-stats`, { credentials: 'include' });
-            if (res.ok) {
-                const json = await res.json();
-                setStats(json);
-            }
+            const json = await apiFetch('/admin/system-stats');
+            setStats(json);
         } catch (e: unknown) {
             console.error(e);
         } finally {
@@ -70,14 +67,10 @@ const AdminDashboard = () => {
     const handleRotateKeys = async () => {
         setIsRotatingKeys(true);
         try {
-            const res = await fetch(`${API_BASE_URL}/admin/rotate-keys`, {
-                method: 'POST',
-                credentials: 'include'
+            const data = await apiFetch('/admin/rotate-keys', {
+                method: 'POST'
             });
-            const data = await res.json();
-            if (res.ok) {
-                toast({ title: "Cryptographic Success", description: data.msg });
-            }
+            toast({ title: "Cryptographic Success", description: data.msg });
         } catch {
             toast({ title: "Rotation Failed", description: "Communication error with neural core", variant: "destructive" });
         } finally {
@@ -89,14 +82,10 @@ const AdminDashboard = () => {
         if (!confirm("INITIATE TOTAL SYSTEM LOCKDOWN? This will suspend all non-administrative node access.")) return;
         setIsLockingDown(true);
         try {
-            const res = await fetch(`${API_BASE_URL}/admin/lockdown`, {
-                method: 'POST',
-                credentials: 'include'
+            const data = await apiFetch('/admin/lockdown', {
+                method: 'POST'
             });
-            const data = await res.json();
-            if (res.ok) {
-                toast({ title: "LOCKDOWN ACTIVE", description: data.msg, variant: "destructive" });
-            }
+            toast({ title: "LOCKDOWN ACTIVE", description: data.msg, variant: "destructive" });
         } catch {
             toast({ title: "Lockdown Failed", description: "System core bypass attempt detected", variant: "destructive" });
         } finally {

@@ -39,18 +39,28 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ analysisData }) => {
         setActiveModel('Routing...');
 
         try {
+            const token = localStorage.getItem('access_token');
+            const headers: HeadersInit = {
+                'Content-Type': 'application/json',
+            };
+            if (token) {
+                (headers as any)['Authorization'] = `Bearer ${token}`;
+            }
+
             const response = await fetch(`${API_URL}/ai/explain`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${sessionStorage.getItem('access_token')}`
-                },
+                headers,
                 credentials: 'include',
                 body: JSON.stringify({
                     results: analysisData,
                     mode: mode
                 })
             });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ msg: 'AI Engine unavailable' }));
+                throw new Error(errorData.msg || 'AI Engine unavailable');
+            }
 
             if (!response.body) throw new Error("No response stream");
 
@@ -80,9 +90,9 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ analysisData }) => {
 
             toast({ title: "Intelligence Deployed", description: "Analysis complete." });
 
-        } catch (error) {
+        } catch (error: any) {
             console.error("AI Insights Error:", error);
-            toast({ title: "Analysis Failed", description: "AI stream interrupted.", variant: "destructive" });
+            toast({ title: "Analysis Failed", description: error.message || "AI stream interrupted.", variant: "destructive" });
         } finally {
             setLoading(false);
         }

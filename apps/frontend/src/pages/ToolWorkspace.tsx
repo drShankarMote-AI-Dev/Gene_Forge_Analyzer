@@ -20,7 +20,7 @@ import {
     globalAlignment, localAlignment, findTandemRepeats, simulatePCRExtension
 } from '@/utils/dnaUtils';
 import { useToast } from '@/hooks/use-toast';
-import { API_BASE_URL } from '@/utils/api';
+import { API_BASE_URL, apiFetch } from '@/utils/api';
 import {
     ResponsiveContainer,
     AreaChart, Area, BarChart, Bar
@@ -318,12 +318,20 @@ const ToolWorkspace = () => {
 
         setIsAILoading(true);
         setAiExplanation('');
-        setExpandedSections(prev => ({ ...prev, ai: true })); // Auto-expand AI once clicked
+        setExpandedSections(prev => ({ ...prev, ai: true }));
 
         try {
+            const token = localStorage.getItem('access_token');
+            const headers: HeadersInit = {
+                'Content-Type': 'application/json',
+            };
+            if (token) {
+                (headers as any)['Authorization'] = `Bearer ${token}`;
+            }
+
             const response = await fetch(`${API_BASE_URL}/ai/explain`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers,
                 credentials: 'include',
                 body: JSON.stringify({
                     results: results,
@@ -342,7 +350,10 @@ const ToolWorkspace = () => {
                 })
             });
 
-            if (!response.ok) throw new Error('AI Engine unavailable');
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ msg: 'AI Engine unavailable' }));
+                throw new Error(errorData.msg || 'AI Engine unavailable');
+            }
 
             const reader = response.body?.getReader();
             const decoder = new TextDecoder();
@@ -357,9 +368,9 @@ const ToolWorkspace = () => {
                     }
                 }
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('AI Error:', error);
-            setAiExplanation('Error communicating with AI engine. Please verify your connection.');
+            setAiExplanation(`Error: ${error.message || 'Error communicating with AI engine. Please verify your connection.'}`);
         } finally {
             setIsAILoading(false);
         }

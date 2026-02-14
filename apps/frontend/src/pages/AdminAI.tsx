@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '@/utils/api';
+import { API_BASE_URL, apiFetch } from '@/utils/api';
 import { Card } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -55,15 +55,11 @@ const AdminAI = () => {
 
     const fetchUsage = async () => {
         try {
-            const res = await fetch(`${API_BASE_URL}/ai/usage`, { credentials: 'include' });
-            if (res.ok) {
-                const json = await res.json();
-                setData(json);
-            } else {
-                toast({ title: "Access Denied", description: "Admin privileges required.", variant: "destructive" });
-            }
-        } catch (e: unknown) {
-            console.error(e);
+            const json = await apiFetch('/ai/usage');
+            setData(json);
+        } catch (err: any) {
+            console.error(err);
+            toast({ title: "Access Denied", description: err.message || "Admin privileges required.", variant: "destructive" });
         } finally {
             setLoading(false);
         }

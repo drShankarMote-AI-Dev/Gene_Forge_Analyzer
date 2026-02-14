@@ -22,7 +22,7 @@ import { countBases, reverseComplement, calculateGlobalGCContent } from '@/utils
 import { generatePDFReport, generateCompleteReport } from '@/utils/reportUtils';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '../hooks/useAuth';
-import { API_BASE_URL } from '@/utils/api';
+import { API_BASE_URL, apiFetch } from '@/utils/api';
 
 // Lazy load tool components
 const SequenceUploader = React.lazy(() => import('@/components/SequenceUploader'));
@@ -101,10 +101,8 @@ const Index = () => {
         }
 
         try {
-            const response = await fetch(`${API_BASE_URL}/genomic-data`, {
+            await apiFetch('/genomic-data', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
                 body: JSON.stringify({
                     title: `Analysis - ${new Date().toLocaleDateString()}`,
                     data_type: 'raw_sequence',
@@ -112,18 +110,14 @@ const Index = () => {
                 }),
             });
 
-            if (response.ok) {
-                toast({
-                    title: "Saved Securely",
-                    description: "Your data is encrypted with AES-256-GCM on our servers.",
-                });
-            } else {
-                throw new Error('Save failed');
-            }
-        } catch {
+            toast({
+                title: "Saved Securely",
+                description: "Your data is encrypted with AES-256-GCM on our servers.",
+            });
+        } catch (err: any) {
             toast({
                 title: "Save Failed",
-                description: "Could not persist data to secure storage.",
+                description: err.message || "Could not persist data to secure storage.",
                 variant: "destructive"
             });
         }

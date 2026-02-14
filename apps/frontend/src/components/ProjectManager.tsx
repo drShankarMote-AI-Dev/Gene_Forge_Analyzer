@@ -14,7 +14,7 @@ import {
     Plus
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { API_BASE_URL as API_URL } from '@/utils/api';
+import { API_BASE_URL as API_URL, apiFetch } from '@/utils/api';
 
 interface Project {
     id: number;
@@ -47,8 +47,10 @@ const ProjectManager: React.FC<ProjectManagerProps> = ({ onLoadAnalysis, current
     const fetchProjects = useCallback(async () => {
         setLoading(true);
         try {
-            const resp = await fetch(`${API_URL}/projects`, { credentials: 'include' });
-            if (resp.ok) setProjects(await resp.json());
+            const data = await apiFetch('/projects');
+            setProjects(data);
+        } catch (err) {
+            console.error(err);
         } finally {
             setLoading(false);
         }
@@ -57,44 +59,39 @@ const ProjectManager: React.FC<ProjectManagerProps> = ({ onLoadAnalysis, current
     const createProject = async () => {
         if (!newProjectName.trim()) return;
         try {
-            const resp = await fetch(`${API_URL}/projects`, {
+            await apiFetch('/projects', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
                 body: JSON.stringify({ name: newProjectName })
             });
-            if (resp.ok) {
-                setNewProjectName('');
-                fetchProjects();
-                toast({ title: "Project Created", description: "You can now save analysis session to this project." });
-            }
-        } catch {
-            toast({ title: "Error", description: "Failed to create project", variant: "destructive" });
+            setNewProjectName('');
+            fetchProjects();
+            toast({ title: "Project Created", description: "You can now save analysis session to this project." });
+        } catch (err: any) {
+            toast({ title: "Error", description: err.message || "Failed to create project", variant: "destructive" });
         }
     };
 
     const deleteProject = async (id: number) => {
         if (!confirm("Are you sure? This will delete all analysis history for this project.")) return;
         try {
-            const resp = await fetch(`${API_URL}/projects/${id}`, {
-                method: 'DELETE',
-                credentials: 'include'
+            await apiFetch(`/projects/${id}`, {
+                method: 'DELETE'
             });
-            if (resp.ok) {
-                if (selectedProject?.id === id) setSelectedProject(null);
-                fetchProjects();
-                toast({ title: "Project Deleted" });
-            }
-        } catch {
-            toast({ title: "Error", description: "Delete failed", variant: "destructive" });
+            if (selectedProject?.id === id) setSelectedProject(null);
+            fetchProjects();
+            toast({ title: "Project Deleted" });
+        } catch (err: any) {
+            toast({ title: "Error", description: err.message || "Delete failed", variant: "destructive" });
         }
     };
 
     const fetchVersions = async (projectId: number) => {
         setLoadingVersions(true);
         try {
-            const resp = await fetch(`${API_URL}/projects/${projectId}/analysis`, { credentials: 'include' });
-            if (resp.ok) setVersions(await resp.json());
+            const data = await apiFetch(`/projects/${projectId}/analysis`);
+            setVersions(data);
+        } catch (err) {
+            console.error(err);
         } finally {
             setLoadingVersions(false);
         }
@@ -102,14 +99,11 @@ const ProjectManager: React.FC<ProjectManagerProps> = ({ onLoadAnalysis, current
 
     const loadVersion = async (analysisId: number) => {
         try {
-            const resp = await fetch(`${API_URL}/analysis/${analysisId}`, { credentials: 'include' });
-            if (resp.ok) {
-                const data = await resp.json();
-                onLoadAnalysis(data.sequence, data.results);
-                toast({ title: "Analysis Restored", description: `Loaded version ${data.version} from secure storage.` });
-            }
-        } catch {
-            toast({ title: "Error", description: "Failed to load history", variant: "destructive" });
+            const data = await apiFetch(`/analysis/${analysisId}`);
+            onLoadAnalysis(data.sequence, data.results);
+            toast({ title: "Analysis Restored", description: `Loaded version ${data.version} from secure storage.` });
+        } catch (err: any) {
+            toast({ title: "Error", description: err.message || "Failed to load history", variant: "destructive" });
         }
     };
 
@@ -120,23 +114,19 @@ const ProjectManager: React.FC<ProjectManagerProps> = ({ onLoadAnalysis, current
         }
 
         try {
-            const resp = await fetch(`${API_URL}/projects/${selectedProject.id}/analysis`, {
+            await apiFetch(`/projects/${selectedProject.id}/analysis`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
                 body: JSON.stringify({
                     sequence: currentSequence,
                     results: currentResults || {}
                 })
             });
 
-            if (resp.ok) {
-                fetchVersions(selectedProject.id);
-                fetchProjects(); // Refresh counts
-                toast({ title: "Snapshot Saved", description: "Current session encrypted and versioned." });
-            }
-        } catch {
-            toast({ title: "Error", description: "Save failed", variant: "destructive" });
+            fetchVersions(selectedProject.id);
+            fetchProjects(); // Refresh counts
+            toast({ title: "Snapshot Saved", description: "Current session encrypted and versioned." });
+        } catch (err: any) {
+            toast({ title: "Error", description: err.message || "Save failed", variant: "destructive" });
         }
     };
 

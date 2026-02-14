@@ -8,7 +8,7 @@ import { toast } from '@/components/ui/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UploadCloud, FileText, Keyboard, CheckCircle2, Database, ShieldCheck, Clock, Loader2, FileUp, Upload } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { API_BASE_URL as API_URL } from '@/utils/api';
+import { API_BASE_URL as API_URL, apiFetch } from '@/utils/api';
 import { validateDNA } from '@/utils/dnaUtils';
 
 interface SequenceUploaderProps {
@@ -89,13 +89,10 @@ const SequenceUploader: React.FC<SequenceUploaderProps> = ({ onSequenceSubmit })
   const fetchSavedRecords = async () => {
     setLoadingSaved(true);
     try {
-      const response = await fetch(`${API_URL}/genomic-data`, {
-        credentials: 'include',
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setSavedRecords(data);
-      }
+      const data = await apiFetch('/genomic-data');
+      setSavedRecords(data);
+    } catch (err) {
+      console.error(err);
     } finally {
       setLoadingSaved(false);
     }
@@ -103,21 +100,16 @@ const SequenceUploader: React.FC<SequenceUploaderProps> = ({ onSequenceSubmit })
 
   const loadRecord = async (id: number) => {
     try {
-      const response = await fetch(`${API_URL}/genomic-data/${id}`, {
-        credentials: 'include',
+      const data = await apiFetch(`/genomic-data/${id}`);
+      onSequenceSubmit(data.payload);
+      toast({
+        title: "Secure Data Decrypted",
+        description: `Loaded "${data.title}" successfully. Data was decrypted on-the-fly.`,
       });
-      if (response.ok) {
-        const data = await response.json();
-        onSequenceSubmit(data.payload);
-        toast({
-          title: "Secure Data Decrypted",
-          description: `Loaded "${data.title}" successfully. Data was decrypted on-the-fly.`,
-        });
-      }
-    } catch {
+    } catch (err: any) {
       toast({
         title: "Access Denied",
-        description: "Encryption key validation failed or data corrupted.",
+        description: err.message || "Encryption key validation failed or data corrupted.",
         variant: "destructive"
       });
     }
