@@ -23,7 +23,8 @@ export default defineConfig(({ mode }: ConfigEnv) => {
         "gene-forge-analyzer.vercel.app",
         "gene-forge-analyzer.onrender.com"
       ],
-      proxy: {
+      // Use proxy ONLY in development
+      proxy: mode === 'development' ? {
         '/api': {
           target: env.VITE_PROXY_TARGET || 'http://127.0.0.1:5000',
           changeOrigin: true,
@@ -51,7 +52,7 @@ export default defineConfig(({ mode }: ConfigEnv) => {
             });
           },
         }
-      }
+      } : undefined
     },
     preview: {
       allowedHosts: [".vercel.app", ".onrender.com"],

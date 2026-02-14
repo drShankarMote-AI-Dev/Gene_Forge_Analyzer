@@ -99,9 +99,12 @@ app.config['JWT_REFRESH_COOKIE_PATH'] = '/auth/refresh'
 app.config['JWT_COOKIE_CSRF_PROTECT'] = False
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(minutes=60)
 app.config['JWT_REFRESH_TOKEN_EXPIRES'] = datetime.timedelta(days=30)
-# Production Security: Mandatory for cross-domain cookies
+# Production Security: Mandatory for cross-domain cookies (Vercel <-> Render)
+app.config['JWT_SESSION_COOKIE'] = False
 app.config['JWT_COOKIE_SECURE'] = True 
 app.config['JWT_COOKIE_SAMESITE'] = 'None'
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 
 # Development Overrides (auto-detect)
 # If we are running in debug mode or FLASK_ENV/NODE_ENV is development, we must relax security for HTTP localhost
@@ -111,6 +114,8 @@ if os.environ.get('FLASK_ENV') == 'development' or os.environ.get('NODE_ENV') ==
 if app.debug:
     app.config['JWT_COOKIE_SECURE'] = False
     app.config['JWT_COOKIE_SAMESITE'] = 'Lax'
+    app.config['SESSION_COOKIE_SECURE'] = False
+    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
 # Email Configuration (Mapped to PROD_AUTH_VERCEL spec)
 app.config['MAIL_SERVER'] = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
