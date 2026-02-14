@@ -4,25 +4,26 @@
 
 @layer base {
   :root {
-    /* Light Mode: Clean, Clinical, Scientific */
-    --background: 210 40% 98%;
+    /* Light Mode: Professional SaaS Clean */
+    --background: 0 0% 100%;
     --foreground: 222 47% 11%;
 
-    --card: 0 0% 100%;
+    --card: 210 40% 98%;
     --card-foreground: 222 47% 11%;
 
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    --primary: 200 95% 35%;
-    /* Deep Scientific Teal */
-    --primary-foreground: 210 40% 98%;
+    --primary: 193 82% 31%;
+    /* #0E7490 */
+    --primary-foreground: 0 0% 100%;
 
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222 47% 11%;
 
     --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 40%;
+    --muted-foreground: 215 16% 35%;
+    /* #475569 for high contrast */
     /* Darker for better contrast */
 
     --accent: 262 83% 58%;
@@ -34,32 +35,38 @@
 
     --border: 214.3 31.8% 90%;
     --input: 214.3 31.8% 90%;
-    --ring: 200 95% 35%;
+    --ring: 193 82% 31%;
+    /* #0E7490 */
 
     --radius: 1rem;
     --sidebar-ring: 217.2 91.2% 59.8%;
 
     /* DNA base colors - Premium Medical Palette */
-    --dna-a: 350 80% 60%;
-    --dna-t: 191 90% 45%;
-    --dna-g: 156 72% 45%;
-    --dna-c: 45 93% 47%;
+    --dna-a: 156 72% 45%;
+    /* #34D399 equivalent HSL-ish */
+    --dna-t: 213 94% 68%;
+    /* #60A5FA equivalent */
+    --dna-g: 330 81% 60%;
+    /* #F472B6 equivalent */
+    --dna-c: 48 96% 53%;
+    /* #FACC15 equivalent */
   }
 
   .dark {
-    /* Dark Mode: Deep Space, High Tech, Bioluminescence */
-    --background: 222 47% 6%;
-    /* Rich Midnight Blue */
-    --foreground: 210 40% 98%;
+    /* Dark Mode: Deep SaaS Professional */
+    --background: 222 47% 11%;
+    /* #0F172A */
+    --foreground: 0 0% 100%;
 
-    --card: 217 33% 12%;
-    /* Slightly lighter deep blue */
-    --card-foreground: 210 40% 98%;
+    --card: 217 33% 17%;
+    /* #1E293B */
+    --card-foreground: 0 0% 100%;
 
     --popover: 222 47% 6%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 186 100% 50%;
+    --primary: 193 82% 31%;
+    /* #0E7490 */
     /* Electric Cyan for pop */
     --primary-foreground: 222 47% 11%;
 
@@ -67,7 +74,8 @@
     --secondary-foreground: 210 40% 98%;
 
     --muted: 217 33% 15%;
-    --muted-foreground: 215 20% 70%;
+    --muted-foreground: 212 33% 84%;
+    /* #CBD5E1 */
     /* Lighter gray for better visibility */
 
     --accent: 263 70% 65%;
@@ -107,11 +115,11 @@
 }
 
 .glass {
-  @apply bg-white/70 dark:bg-black/40 backdrop-blur-2xl border border-white/20 dark:border-white/10 shadow-2xl;
+  @apply bg-white dark:bg-[#0F172A]/80 backdrop-blur-2xl border border-[#E2E8F0] dark:border-white/10 shadow-2xl;
 }
 
 .glass-card {
-  @apply bg-white/40 dark:bg-zinc-900/40 backdrop-blur-md border border-white/30 dark:border-white/5 shadow-2xl transition-all duration-500 rounded-[2rem];
+  @apply bg-white/95 dark:bg-[#1E293B]/80 backdrop-blur-md border border-[#E2E8F0] dark:border-white/10 shadow-2xl transition-all duration-500 rounded-[2rem];
 }
 
 .glass-card:hover {
@@ -136,8 +144,24 @@
   }
 }
 
+@keyframes float-slow {
+
+  0%,
+  100% {
+    transform: translateY(0px) rotate(var(--rotation, 0deg));
+  }
+
+  50% {
+    transform: translateY(-30px) rotate(calc(var(--rotation, 0deg) + 3deg));
+  }
+}
+
 .animate-float {
   animation: float 8s ease-in-out infinite;
+}
+
+.animate-float-slow {
+  animation: float-slow var(--duration, 30s) ease-in-out infinite;
 }
 
 @keyframes pulse-soft {
@@ -287,60 +311,7 @@
 }
 
 /* Admin Dashboard Specific Styles */
-.admin-sidebar {
-  @apply m-4 mr-0 h-[calc(100vh-2rem)] rounded-[2.5rem] border border-white/10 transition-all duration-1000 fixed z-[70] backdrop-blur-3xl;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-  background: linear-gradient(135deg,
-      hsla(var(--background), 0.9) 0%,
-      hsla(var(--background), 0.6) 100%);
-}
-
-.admin-sidebar::before {
-  content: '';
-  @apply absolute inset-0 opacity-20 pointer-events-none rounded-[2.5rem];
-  background: radial-gradient(circle at top left, hsla(var(--primary), 0.4) 0%, transparent 60%);
-}
-
-.admin-nav-item {
-  @apply flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-500 text-muted-foreground/60 hover:text-primary hover:bg-primary/10 active:scale-95 relative overflow-hidden;
-}
-
-.admin-nav-item::after {
-  content: '';
-  @apply absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-0 bg-primary rounded-r-full transition-all duration-700 opacity-0;
-  box-shadow: 0 0 20px hsl(var(--primary));
-}
-
-.admin-nav-item:hover::after {
-  @apply h-6 opacity-80;
-}
-
-.admin-nav-item.active {
-  @apply bg-primary/20 text-primary font-black backdrop-blur-xl border-l border-primary/30;
-  box-shadow: 0 0 40px hsl(var(--primary) / 0.15);
-}
-
-.admin-nav-item.active::after {
-  @apply h-10 opacity-100;
-}
-
-.admin-nav-item svg {
-  @apply transition-all duration-500;
-}
-
-.admin-nav-item:hover svg {
-  @apply scale-110;
-  filter: drop-shadow(0 0 8px hsl(var(--primary) / 0.5));
-}
-
-.admin-header-glass {
-  @apply sticky top-0 z-40 backdrop-blur-3xl border-b border-white/5;
-  background: linear-gradient(to bottom, hsla(var(--background), 0.8), hsla(var(--background), 0));
-}
-
-.admin-search-input {
-  @apply bg-muted/20 border-border/10 focus:bg-background/40 focus:ring-4 focus:ring-primary/10 transition-all duration-500 rounded-2xl font-bold;
-}
+/* Admin Layout moved to Tailwind Utilities in component */
 
 .admin-card-premium {
   @apply glass-card rounded-[2.5rem] p-8 border-border/20 hover:border-primary/40 transition-all duration-700 hover:shadow-primary/5 hover:bg-white/[0.03];
@@ -497,4 +468,120 @@
 
 .glow-success-xs {
   box-shadow: 0 0 10px rgba(34, 197, 94, 0.4);
+}
+
+@keyframes rotateDNA {
+  from {
+    transform: rotateY(0deg);
+  }
+
+  to {
+    transform: rotateY(360deg);
+  }
+}
+
+@keyframes float-mini {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+.perspective-1200 {
+  perspective: 1200px;
+}
+
+.animate-dna-rotate {
+  animation: rotateDNA 20s linear infinite;
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+.animate-float-mini {
+  animation: float-mini 3s ease-in-out infinite;
+}
+
+.dna-rotate {
+  animation: dnaCinematic 32s ease-in-out infinite;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+@keyframes dnaCinematic {
+  0% {
+    transform: rotateY(0deg) translateY(-4px);
+  }
+
+  50% {
+    transform: rotateY(180deg) translateY(4px);
+  }
+
+  100% {
+    transform: rotateY(360deg) translateY(-4px);
+  }
+}
+
+.hero-radial-glow {
+  background: radial-gradient(circle at center, hsla(var(--primary), 0.15) 0%, transparent 70%);
+}
+
+.dna-bg {
+  animation: dnaBackground 45s linear infinite;
+  opacity: 0.15;
+}
+
+@keyframes dnaBackground {
+  from {
+    transform: rotateY(0deg);
+  }
+
+  to {
+    transform: rotateY(360deg);
+  }
+}
+
+@layer utilities {
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-white/10 rounded-full hover:bg-primary/20 transition-colors duration-300;
+  }
+
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+}
+
+/* Scrollbar refinement for the whole app */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-muted-foreground/10 rounded-full hover:bg-muted-foreground/20 transition-all duration-300 border-4 border-transparent bg-clip-padding;
 }

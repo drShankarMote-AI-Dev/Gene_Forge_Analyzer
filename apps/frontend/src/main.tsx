@@ -7,7 +7,12 @@ import { GoogleOAuthProvider } from '@react-oauth/google'
 // Add a fade animation for theme change
 document.documentElement.style.transition = 'background 0.5s, color 0.5s';
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+
+window.onerror = function (message, source, lineno, colno, error) {
+  const errorMsg = `Error: ${message}\nSource: ${source}\nLine: ${lineno}\nCol: ${colno}\nStack: ${error?.stack}`;
+  console.error(errorMsg);
+};
 
 if (!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID.includes('your-google-client-id')) {
   console.warn("⚠️ GOOGLE_CLIENT_ID is not configured. Please set VITE_GOOGLE_CLIENT_ID in your .env file.");

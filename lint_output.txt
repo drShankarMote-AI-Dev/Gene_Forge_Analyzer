@@ -1,0 +1,129 @@
+﻿
+> gene-forge-analyzer@2.0.0 lint
+> eslint .
+
+
+C:\Users\Scien\OneDrive\Desktop\GitHub\Gene_Forge_Analyzer\apps\frontend\src\components\SequenceUploader.tsx
+  12:10  warning  'cleanSequence' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Scien\OneDrive\Desktop\GitHub\Gene_Forge_Analyzer\apps\frontend\src\components\admin\AdminLayout.tsx
+  10:5  warning  'Activity' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Scien\OneDrive\Desktop\GitHub\Gene_Forge_Analyzer\apps\frontend\src\pages\AdminAI.tsx
+  4:16  warning  'CardContent' is defined but never used      @typescript-eslint/no-unused-vars
+  4:29  warning  'CardHeader' is defined but never used       @typescript-eslint/no-unused-vars
+  4:41  warning  'CardTitle' is defined but never used        @typescript-eslint/no-unused-vars
+  4:52  warning  'CardDescription' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Scien\OneDrive\Desktop\GitHub\Gene_Forge_Analyzer\apps\frontend\src\pages\AdminDashboard.tsx
+    2:16  warning  'CardContent' is defined but never used      @typescript-eslint/no-unused-vars
+    2:29  warning  'CardHeader' is defined but never used       @typescript-eslint/no-unused-vars
+    2:41  warning  'CardTitle' is defined but never used        @typescript-eslint/no-unused-vars
+    2:52  warning  'CardDescription' is defined but never used  @typescript-eslint/no-unused-vars
+    6:10  warning  'ShieldAlert' is defined but never used      @typescript-eslint/no-unused-vars
+    6:93  warning  'Server' is defined but never used           @typescript-eslint/no-unused-vars
+  232:51  warning  'i' is defined but never used                @typescript-eslint/no-unused-vars
+
+C:\Users\Scien\OneDrive\Desktop\GitHub\Gene_Forge_Analyzer\apps\frontend\src\pages\AdminLogin.tsx
+   7:10  warning  'ShieldAlert' is defined but never used             @typescript-eslint/no-unused-vars
+  10:10  warning  'API_BASE_URL' is defined but never used            @typescript-eslint/no-unused-vars
+  21:24  warning  'setAdminTheme' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  72:19  warning  'data' is assigned a value but never used           @typescript-eslint/no-unused-vars
+  78:23  error    Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  95:23  error    Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+
+C:\Users\Scien\OneDrive\Desktop\GitHub\Gene_Forge_Analyzer\apps\frontend\src\pages\AdminLogs.tsx
+   4:29  warning  'CardHeader' is defined but never used  @typescript-eslint/no-unused-vars
+  15:5   warning  'Wifi' is defined but never used        @typescript-eslint/no-unused-vars
+
+C:\Users\Scien\OneDrive\Desktop\GitHub\Gene_Forge_Analyzer\apps\frontend\src\pages\AdminUsers.tsx
+   4:16  warning  'CardContent' is defined but never used  @typescript-eslint/no-unused-vars
+   4:29  warning  'CardHeader' is defined but never used   @typescript-eslint/no-unused-vars
+  12:5   warning  'Calendar' is defined but never used     @typescript-eslint/no-unused-vars
+  15:5   warning  'Plus' is defined but never used         @typescript-eslint/no-unused-vars
+
+C:\Users\Scien\OneDrive\Desktop\GitHub\Gene_Forge_Analyzer\apps\frontend\src\pages\Home.tsx
+   15:5    warning  'Users' is defined but never used          @typescript-eslint/no-unused-vars
+   16:5    warning  'GraduationCap' is defined but never used  @typescript-eslint/no-unused-vars
+   17:5    warning  'Award' is defined but never used          @typescript-eslint/no-unused-vars
+  157:168  error    Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  158:178  error    Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  159:167  error    Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  160:171  error    Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  161:176  error    Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  162:169  error    Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  163:170  error    Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  164:184  error    Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  165:168  error    Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  166:185  error    Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+
+C:\Users\Scien\OneDrive\Desktop\GitHub\Gene_Forge_Analyzer\apps\frontend\src\pages\ToolWorkspace.tsx
+    1:27   warning  'useEffect' is defined but never used                   @typescript-eslint/no-unused-vars
+    4:23   warning  'ChevronRight' is defined but never used                @typescript-eslint/no-unused-vars
+    4:60   warning  'Info' is defined but never used                        @typescript-eslint/no-unused-vars
+    5:15   warning  'AlertCircle' is defined but never used                 @typescript-eslint/no-unused-vars
+    5:42   warning  'Copy' is defined but never used                        @typescript-eslint/no-unused-vars
+    6:13   warning  'Upload' is defined but never used                      @typescript-eslint/no-unused-vars
+    6:36   warning  'Terminal' is defined but never used                    @typescript-eslint/no-unused-vars
+   12:16   warning  'CardHeader' is defined but never used                  @typescript-eslint/no-unused-vars
+   12:28   warning  'CardTitle' is defined but never used                   @typescript-eslint/no-unused-vars
+   20:79   warning  'digestSequence' is defined but never used              @typescript-eslint/no-unused-vars
+   25:5    warning  'XAxis' is defined but never used                       @typescript-eslint/no-unused-vars
+   25:12   warning  'YAxis' is defined but never used                       @typescript-eslint/no-unused-vars
+   25:19   warning  'CartesianGrid' is defined but never used               @typescript-eslint/no-unused-vars
+   25:34   warning  'Tooltip' is defined but never used                     @typescript-eslint/no-unused-vars
+   36:44   error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+   39:12   warning  'analyzedSequence' is assigned a value but never used   @typescript-eslint/no-unused-vars
+   40:12   warning  'analyzedSequence2' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   73:25   error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  114:15   warning  'parsedInput2' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  162:35   error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  537:118  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  564:83   error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  598:81   error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  602:80   error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  619:97   error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  639:99   error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  639:152  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  666:103  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  676:95   error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  686:122  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  711:96   error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  725:96   error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+
+C:\Users\Scien\OneDrive\Desktop\GitHub\Gene_Forge_Analyzer\apps\frontend\vite.config.ts
+  32:30  warning  '_options' is defined but never used  @typescript-eslint/no-unused-vars
+  33:37  warning  '_req' is defined but never used      @typescript-eslint/no-unused-vars
+  33:43  warning  '_res' is defined but never used      @typescript-eslint/no-unused-vars
+  45:30  warning  '_options' is defined but never used  @typescript-eslint/no-unused-vars
+  46:37  warning  '_req' is defined but never used      @typescript-eslint/no-unused-vars
+  46:43  warning  '_res' is defined but never used      @typescript-eslint/no-unused-vars
+
+Γ£û 76 problems (27 errors, 49 warnings)
+
+node.exe : npm error Lifecycle 
+script `lint` failed with error:
+At C:\Program 
+Files\nodejs\npm.ps1:29 char:3
++   & $NODE_EXE $NPM_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpe 
+   cified: (npm error Lifec...led w  
+  ith error::String) [], RemoteExc   
+ eption
+    + FullyQualifiedErrorId : Native 
+   CommandError
+ 
+npm error code 1
+npm error path C:\Users\Scien\OneDriv
+e\Desktop\GitHub\Gene_Forge_Analyzer\
+apps\frontend
+npm error workspace 
+gene-forge-analyzer@2.0.0
+npm error location C:\Users\Scien\One
+Drive\Desktop\GitHub\Gene_Forge_Analy
+zer\apps\frontend
+npm error command failed
+npm error command 
+C:\WINDOWS\system32\cmd.exe /d /s /c 
+eslint .

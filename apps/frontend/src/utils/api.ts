@@ -4,9 +4,8 @@
  */
 
 export const getApiBaseUrl = () => {
-    // In production, VITE_API_URL is the full backend URL
-    // In local development, it can be '/api' (for Vite proxy) or 'http://localhost:5000'
-    return import.meta.env.VITE_API_URL || '/api';
+    // Priority: VITE_API_BASE_URL > VITE_API_URL > default /api
+    return import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || '/api';
 };
 
 export const API_BASE_URL = getApiBaseUrl();
@@ -21,6 +20,8 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
 
     const response = await fetch(url, {
         ...options,
+        // Ensure credentials (cookies) are sent for cross-domain requests in production
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
             ...options.headers,

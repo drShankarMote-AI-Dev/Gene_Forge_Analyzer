@@ -9,7 +9,7 @@ const config = {
     './components/**/*.{ts,tsx}',
     './app/**/*.{ts,tsx}',
     './src/**/*.{ts,tsx}',
-	],
+  ],
   prefix: "",
   theme: {
     container: {
@@ -83,6 +83,9 @@ const config = {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "dna-spin": "dna-spin 4s linear infinite",
+      },
+      transitionTimingFunction: {
+        smooth: "cubic-bezier(0.23, 1, 0.32, 1)",
       },
     },
   },

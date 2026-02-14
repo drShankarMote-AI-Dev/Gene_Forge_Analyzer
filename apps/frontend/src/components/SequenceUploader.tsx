@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -6,9 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/components/ui/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { UploadCloud, FileText, Keyboard, CheckCircle2, Database, ShieldCheck, Clock, Loader2 } from 'lucide-react';
+import { UploadCloud, FileText, Keyboard, CheckCircle2, Database, ShieldCheck, Clock, Loader2, FileUp, Upload } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { API_BASE_URL as API_URL } from '@/utils/api';
+import { validateDNA } from '@/utils/dnaUtils';
 
 interface SequenceUploaderProps {
   onSequenceSubmit: (sequence: string) => void;
@@ -28,6 +29,7 @@ const SequenceUploader: React.FC<SequenceUploaderProps> = ({ onSequenceSubmit })
   const { isAuthenticated } = useAuth();
   const [savedRecords, setSavedRecords] = useState<SavedRecord[]>([]);
   const [loadingSaved, setLoadingSaved] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -48,12 +50,18 @@ const SequenceUploader: React.FC<SequenceUploaderProps> = ({ onSequenceSubmit })
     const reader = new FileReader();
     reader.onload = (e) => {
       if (e.target && typeof e.target.result === 'string') {
-        const sequence = e.target.result.replace(/\s/g, '');
-        if (validateSequence(sequence)) {
-          onSequenceSubmit(sequence);
+        const validation = validateDNA(e.target.result);
+        if (validation.valid && validation.cleaned) {
+          onSequenceSubmit(validation.cleaned);
           toast({
             title: "Sequence Parsed Successfully",
-            description: `Analyzing ${sequence.length.toLocaleString()} bases from genomic data.`,
+            description: `Analyzing ${validation.cleaned.length.toLocaleString()} bases from genomic data.`,
+          });
+        } else {
+          toast({
+            title: "Validation Error",
+            description: validation.error,
+            variant: "destructive"
           });
         }
       }
@@ -62,41 +70,20 @@ const SequenceUploader: React.FC<SequenceUploaderProps> = ({ onSequenceSubmit })
   };
 
   const handleManualSubmit = () => {
-    const sequence = manualSequence.replace(/\s/g, '');
-    if (validateSequence(sequence)) {
-      onSequenceSubmit(sequence);
+    const validation = validateDNA(manualSequence);
+    if (validation.valid && validation.cleaned) {
+      onSequenceSubmit(validation.cleaned);
       toast({
         title: "Genomic Input Validated",
-        description: `Processing ${sequence.length.toLocaleString()} base pairs...`,
+        description: `Processing ${validation.cleaned.length.toLocaleString()} base pairs...`,
       });
-    }
-  };
-
-  const validateSequence = (sequence: string) => {
-    if (sequence.length === 0) {
+    } else {
       toast({
-        title: "Input Required",
-        description: "Please provide a valid genomic sequence for processing.",
+        title: "Validation Error",
+        description: validation.error,
         variant: "destructive"
       });
-      return false;
     }
-
-    const validBases = ['A', 'T', 'G', 'C', 'a', 't', 'g', 'c', 'N', 'n'];
-    const invalidBases = [...new Set(sequence.split(''))].filter(
-      base => !validBases.includes(base)
-    );
-
-    if (invalidBases.length > 0) {
-      toast({
-        title: "Sequence Validity Error",
-        description: `Unrecognized nucleotides identified: ${invalidBases.join(', ')}`,
-        variant: "destructive"
-      });
-      return false;
-    }
-
-    return true;
   };
 
   const fetchSavedRecords = async () => {
@@ -136,7 +123,7 @@ const SequenceUploader: React.FC<SequenceUploaderProps> = ({ onSequenceSubmit })
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (tab === 'saved' && isAuthenticated) {
       fetchSavedRecords();
     }
@@ -182,16 +169,66 @@ const SequenceUploader: React.FC<SequenceUploaderProps> = ({ onSequenceSubmit })
           <div className="mt-6">
             <TabsContent value="manual" className="animate-in fade-in slide-in-from-left-4 duration-300">
               <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground pl-1">
-                    DNA Sequence String
-                  </Label>
-                  <Textarea
-                    value={manualSequence}
-                    onChange={(e) => setManualSequence(e.target.value)}
-                    placeholder="e.g. ATGC..."
-                    className="min-h-[160px] glass bg-background/50 border-border/50 focus:border-primary/50 focus:ring-primary/20 transition-all font-mono text-sm leading-relaxed rounded-2xl resize-none"
-                  />
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between pl-1">
+                    <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                      DNA Sequence String
+                    </Label>
+                    <div className="flex gap-2">
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                        className="hidden"
+                        accept=".fasta,.fa,.txt,.dna"
+                      />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="h-7 px-2 rounded-lg text-[9px] font-black uppercase tracking-widest gap-2 bg-primary/5 hover:bg-primary/10 transition-colors"
+                      >
+                        <FileUp className="h-3 w-3" /> Import
+                      </Button>
+                    </div>
+                  </div>
+                  <div
+                    className="relative group"
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const file = e.dataTransfer.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (re) => {
+                          const content = re.target?.result as string;
+                          const validation = validateDNA(content);
+                          if (validation.valid && validation.cleaned) {
+                            setManualSequence(validation.cleaned);
+                            toast({ title: "File Dropped", description: `${file.name} loaded into editor.` });
+                          }
+                        };
+                        reader.readAsText(file);
+                      }
+                    }}
+                  >
+                    <Textarea
+                      value={manualSequence}
+                      onChange={(e) => setManualSequence(e.target.value)}
+                      placeholder="e.g. >fasta_header\nATGC..."
+                      className="min-h-[160px] glass bg-background/50 border-border/50 focus:border-primary/50 focus:ring-primary/20 transition-all font-mono text-sm leading-relaxed rounded-2xl resize-none"
+                    />
+                    {manualSequence.length === 0 && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none opacity-20 group-hover:opacity-40 transition-opacity">
+                        <Upload className="h-6 w-6 mb-1" />
+                        <p className="text-[8px] font-black uppercase tracking-widest text-center">Drag & Drop File Here</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <Button
                   onClick={handleManualSubmit}

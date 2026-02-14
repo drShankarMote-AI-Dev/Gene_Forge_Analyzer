@@ -1,6 +1,6 @@
 {
   "name": "gene-forge-monorepo",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "scripts": {
     "install:all": "npm install && npm install --prefix apps/frontend && cd apps/backend && python -m pip install -r requirements.txt",
@@ -11,19 +11,34 @@
     "build:client": "npm --prefix apps/frontend run build",
     "build:full": "npm run build:client && npm run docker:build",
     "start": "cd apps/backend && gunicorn --worker-class eventlet -w 1 --bind 0.0.0.0:${PORT:-10000} app:app",
-    "docker:build": "docker-compose build",
-    "docker:up": "docker-compose up -d",
-    "docker:down": "docker-compose down",
-    "docker:logs": "docker-compose logs -f",
+    "docker:build": "docker compose build",
+    "docker:build:no-cache": "docker compose build --no-cache",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:restart": "docker compose restart",
+    "docker:logs": "docker compose logs -f",
+    "docker:logs:backend": "docker compose logs -f backend",
+    "docker:logs:frontend": "docker compose logs -f frontend",
     "docker:clean": "docker system prune -f",
+    "docker:clean:all": "docker system prune -af --volumes",
+    "docker:ps": "docker compose ps",
+    "docker:prod:build": "docker build -t geneforge-prod:2.0.0 .",
+    "docker:prod:run": "docker run -d --name geneforge-production -p 5000:5000 --env-file .env --restart unless-stopped geneforge-prod:2.0.0",
     "db:init": "cd apps/backend && python -c \"from app import db, app; with app.app_context(): db.create_all()\"",
     "lint": "npm run lint --workspaces --if-present",
-    "clean:ports": "npx kill-port 5000 5173"
+    "lint:fix": "npm run lint:fix --workspaces --if-present",
+    "clean:ports": "npx kill-port 5000 5173",
+    "clean:all": "npm run clean:ports && npm run docker:clean:all",
+    "version:patch": "npm version patch",
+    "version:minor": "npm version minor",
+    "version:major": "npm version major",
+    "release": "npm run build:full && git push --follow-tags"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
   },
   "workspaces": [
-    "apps/frontend"
+    "apps/frontend",
+    "apps/backend-node"
   ]
 }

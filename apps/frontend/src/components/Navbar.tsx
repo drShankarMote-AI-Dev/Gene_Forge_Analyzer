@@ -19,9 +19,9 @@ const Navbar = () => {
     const { user, isAuthenticated, logout } = useAuth();
 
     return (
-        <nav className="fixed top-4 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl z-50 glass border border-white/20 dark:border-white/10 rounded-[2.5rem] px-8 shadow-2xl">
+        <nav className="fixed top-4 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl z-50 glass border border-white/20 dark:border-white/10 rounded-[2.5rem] px-8 shadow-2xl backdrop-blur-3xl">
             <div className="h-16 flex items-center justify-between">
-                <Link to="/" className="flex items-center gap-3 active:scale-95 transition-transform">
+                <Link to="/" className="flex items-center gap-3 active:scale-95 transition-transform duration-200">
                     <div className="relative h-10 w-auto group">
                         <img
                             src="/logo.svg"
@@ -36,40 +36,56 @@ const Navbar = () => {
                     </div>
                 </Link>
 
-                <div className="hidden md:flex items-center gap-8">
+                <div className="hidden md:flex items-center gap-10">
                     <Link
                         to="/"
-                        className={`text-sm font-bold tracking-wide transition-colors ${location.pathname === '/' ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+                        className={`text-sm font-bold tracking-wide transition-all duration-300 ${location.pathname === '/'
+                            ? 'text-primary'
+                            : 'text-muted-foreground hover:text-foreground hover:scale-105'
                             }`}
                     >
                         Home
                     </Link>
                     <Link
                         to="/analysis"
-                        className={`text-sm font-bold tracking-wide transition-colors ${location.pathname === '/analysis' ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+                        className={`text-sm font-bold tracking-wide transition-all duration-300 ${location.pathname === '/analysis'
+                            ? 'text-primary'
+                            : 'text-muted-foreground hover:text-foreground hover:scale-105'
                             }`}
                     >
                         Analysis
                     </Link>
                     <Link
                         to="/tools"
-                        className={`text-sm font-bold tracking-wide transition-colors ${location.pathname === '/tools' ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+                        className={`text-sm font-bold tracking-wide transition-all duration-300 ${location.pathname === '/tools'
+                            ? 'text-primary'
+                            : 'text-muted-foreground hover:text-foreground hover:scale-105'
                             }`}
                     >
                         Tools
                     </Link>
+                    <Link
+                        to="/learn"
+                        className={`text-sm font-bold tracking-wide transition-all duration-300 ${location.pathname === '/learn'
+                            ? 'text-primary'
+                            : 'text-muted-foreground hover:text-foreground hover:scale-105'
+                            }`}
+                    >
+                        Bioinformatics Basics
+                    </Link>
                 </div>
+
 
                 <div className="flex items-center gap-4">
                     <ThemeToggle />
                     {isAuthenticated ? (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="relative h-10 w-10 rounded-full bg-primary/10 border border-primary/20">
+                                <Button variant="ghost" className="relative h-10 w-10 rounded-full bg-primary/10 border border-primary/20 hover:bg-primary/20 hover:border-primary/30 transition-all duration-300 hover:scale-105">
                                     <UserIcon className="h-5 w-5 text-primary" />
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-56 glass-card border-primary/20" align="end" forceMount>
+                            <DropdownMenuContent className="w-56 glass-card border-primary/20 shadow-2xl" align="end" forceMount>
                                 <DropdownMenuLabel className="font-normal">
                                     <div className="flex flex-col space-y-1">
                                         <p className="text-sm font-bold leading-none">{user?.email}</p>
@@ -77,7 +93,7 @@ const Navbar = () => {
                                     </div>
                                 </DropdownMenuLabel>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => logout()} className="text-destructive focus:text-destructive cursor-pointer font-bold uppercase tracking-widest text-[10px]">
+                                <DropdownMenuItem onClick={() => logout()} className="text-destructive focus:text-destructive cursor-pointer font-bold uppercase tracking-widest text-[10px] hover:bg-destructive/10 transition-colors duration-200">
                                     <LogOut className="mr-2 h-4 w-4" />
                                     <span>Log out</span>
                                 </DropdownMenuItem>

@@ -29,6 +29,7 @@ def list_admins():
 def reset_admin(email, password):
     """Create or update an admin account with a specific password."""
     with app.app_context():
+        email = email.strip().lower()
         user = User.query.filter_by(email=email).first()
         if not user:
             print(f"Creating new admin account: {email}")

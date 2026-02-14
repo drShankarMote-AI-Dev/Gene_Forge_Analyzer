@@ -29,8 +29,8 @@ export default defineConfig(({ mode }: ConfigEnv) => {
           changeOrigin: true,
           secure: false,
           rewrite: (path) => path.replace(/^\/api/, ''),
-          configure: (proxy, _options) => {
-            proxy.on('error', (err, _req, _res) => {
+          configure: (proxy) => {
+            proxy.on('error', (err) => {
               if (err.message.includes('ECONNREFUSED') || err.message.includes('ECONNRESET')) {
                 return; // suppress noisy connection errors during backend boot
               }
@@ -42,8 +42,8 @@ export default defineConfig(({ mode }: ConfigEnv) => {
           target: env.VITE_PROXY_TARGET || 'http://127.0.0.1:5000',
           ws: true,
           changeOrigin: true,
-          configure: (proxy, _options) => {
-            proxy.on('error', (err, _req, _res) => {
+          configure: (proxy) => {
+            proxy.on('error', (err) => {
               if (err.message.includes('ECONNREFUSED') || err.message.includes('ECONNRESET')) {
                 return;
               }
@@ -67,30 +67,16 @@ export default defineConfig(({ mode }: ConfigEnv) => {
     },
     build: {
       sourcemap: mode === 'development',
-      minify: 'terser',
-      terserOptions: {
-        compress: {
-          drop_console: mode === 'production',
-          drop_debugger: mode === 'production',
-        },
-      },
+      chunkSizeWarningLimit: 2000,
       rollupOptions: {
         output: {
           manualChunks: {
             'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-            'ui-vendor': [
-              '@radix-ui/react-dialog',
-              '@radix-ui/react-select',
-              '@radix-ui/react-tabs',
-              '@radix-ui/react-popover',
-              '@radix-ui/react-dropdown-menu'
-            ],
-            'chart-vendor': ['recharts'],
-            'lucide-vendor': ['lucide-react'],
-          },
-        },
-      },
-      chunkSizeWarningLimit: 2000,
+            'charts-vendor': ['recharts'],
+            'pdf-vendor': ['jspdf', 'html2canvas'],
+          }
+        }
+      }
     },
     define: {
       'import.meta.env.VITE_API_URL': JSON.stringify(env.VITE_API_URL || '/api'),

@@ -1,4 +1,3 @@
-import { Document, Packer, Paragraph, HeadingLevel } from 'docx';
 import { saveAs } from 'file-saver';
 
 export const generateCompleteWordReport = async (sectionIds: Array<{ id: string, title: string }>) => {
@@ -7,6 +6,7 @@ export const generateCompleteWordReport = async (sectionIds: Array<{ id: string,
     return false;
   }
   try {
+    const { Document, Packer, Paragraph, HeadingLevel } = await import('docx');
     const children = [
       new Paragraph({
         text: 'GENEFORGE: GENOMIC ANALYSIS REPORT',

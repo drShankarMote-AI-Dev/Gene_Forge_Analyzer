@@ -1,0 +1,178 @@
+/* Admin Specific Theme Styles */
+
+.admin-container {
+    transition: background-color 0.3s ease, color 0.3s ease;
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+}
+
+/* Admin Dark Mode Variable Reset */
+.admin-dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 193 82% 31%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+
+    /* Custom Admin Tokens */
+    --admin-card-bg: rgba(15, 23, 42, 0.4);
+    --admin-border: rgba(255, 255, 255, 0.08);
+    --admin-text: #ffffff;
+}
+
+/* Admin Light Mode Variable Reset */
+.admin-light {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 193 82% 31%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84.2% 4.9%;
+
+    /* Custom Admin Tokens */
+    --admin-card-bg: #f8fafc;
+    --admin-border: #e2e8f0;
+    --admin-text: #0f172a;
+}
+
+
+.admin-container {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+}
+
+/* Admin Light Mode Overrides for High Visibility */
+.admin-light .text-white,
+.admin-light .text-slate-100,
+.admin-light .text-zinc-100,
+.admin-light .text-white\/90,
+.admin-light .text-white\/70,
+.admin-light .text-white\/60 {
+    color: hsl(var(--foreground)) !important;
+}
+
+/* Redefine 'glass' and 'zinc' backgrounds to be light in .admin-light */
+.admin-light .bg-zinc-900\/20,
+.admin-light .bg-zinc-900\/40,
+.admin-light .bg-zinc-950,
+.admin-light .bg-zinc-900,
+.admin-light .bg-zinc-800,
+.admin-light .bg-slate-900,
+.admin-light .bg-black,
+.admin-light .bg-black\/80,
+.admin-light .bg-white\/\[0\.01\],
+.admin-light .bg-white\/\[0\.02\],
+.admin-light .bg-white\/\[0\.03\] {
+    background-color: hsl(var(--card)) !important;
+    color: hsl(var(--foreground)) !important;
+}
+
+/* Handle opacity-based backgrounds frequently used for 'glass' effects */
+.admin-light [class*="bg-white/"],
+.admin-light [class*="bg-white\/["],
+.admin-light [class*="bg-zinc-900/"] {
+    background-color: rgba(0, 0, 0, 0.03) !important;
+}
+
+.admin-light .bg-primary\/20,
+.admin-light .bg-primary\/\[0\.03\],
+.admin-light .bg-primary\/\[0\.08\] {
+    background-color: hsl(var(--primary) / 0.1) !important;
+}
+
+/* Borders */
+.admin-light [class*="border-white/"],
+.admin-light [class*="border-white\/["],
+.admin-light [class*="border-primary/"],
+.admin-light .border-zinc-800,
+.admin-light .border-zinc-700 {
+    border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+.admin-container aside,
+.admin-container header,
+.admin-container footer {
+    border-color: hsl(var(--border)) !important;
+}
+
+/* Fix for specific elements that might have hardcoded dark-mode colors */
+.admin-light .glass,
+.admin-light .glass-card,
+.admin-light .admin-card-premium,
+.admin-light .Card {
+    background: white !important;
+    border-color: rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05) !important;
+}
+
+.admin-light [class*="text-muted-foreground/30"],
+.admin-light [class*="text-muted-foreground/40"] {
+    color: rgba(0, 0, 0, 0.5) !important;
+    font-weight: 600;
+}
+
+/* Input Fields */
+.admin-light input {
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
+    border-color: #e2e8f0 !important;
+}
+
+.admin-light input::placeholder {
+    color: #94a3b8 !important;
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(193, 82, 31, 0.1);
+    border-radius: 10px;
+}
+
+.admin-dark .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.admin-light .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(193, 82, 31, 0.4) !important;
+}

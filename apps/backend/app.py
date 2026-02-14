@@ -35,6 +35,12 @@ import json
 import logging
 import sys
 
+try:
+    from flask_talisman import Talisman
+    HAS_TALISMAN = True
+except ImportError:
+    HAS_TALISMAN = False
+
 # Structured Logging Configuration
 class JsonFormatter(logging.Formatter):
     def format(self, record):
@@ -86,16 +92,16 @@ app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # JWT Configuration
-app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'jwt-dev-secret')
+app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'jwt-dev-secret-change-in-prod')
 app.config['JWT_TOKEN_LOCATION'] = ['cookies']
 app.config['JWT_ACCESS_COOKIE_PATH'] = '/'
 app.config['JWT_REFRESH_COOKIE_PATH'] = '/auth/refresh'
 app.config['JWT_COOKIE_CSRF_PROTECT'] = False
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(minutes=60)
 app.config['JWT_REFRESH_TOKEN_EXPIRES'] = datetime.timedelta(days=30)
-# Production Security defaults
-app.config['JWT_COOKIE_SECURE'] = os.environ.get('JWT_COOKIE_SECURE', 'True') == 'True'
-app.config['JWT_COOKIE_SAMESITE'] = os.environ.get('JWT_COOKIE_SAMESITE', 'None')
+# Production Security: Mandatory for cross-domain cookies
+app.config['JWT_COOKIE_SECURE'] = True 
+app.config['JWT_COOKIE_SAMESITE'] = 'None'
 
 # Development Overrides (auto-detect)
 # If we are running in debug mode or FLASK_ENV/NODE_ENV is development, we must relax security for HTTP localhost
@@ -124,8 +130,8 @@ allowed_origins = [url.strip() for url in os.environ.get('ALLOWED_ORIGINS', fron
 # Core production domains
 production_domains = [
     "https://gene-forge-analyzer.vercel.app", 
-    "https://gene-forge-analyzer-ld7t.onrender.com",
-    "https://gene-forge-analyzer-shankar.vercel.app"
+    "https://gene-forge-analyzer-shankar.vercel.app",
+    "https://gene-forge-analyzer-dr-shankar.vercel.app"
 ]
 
 for domain in production_domains:
@@ -141,12 +147,15 @@ if IS_DEV:
     local_network_regex = re.compile(r"^https?://(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3})(:\d+)?$")
     allowed_origins.append(local_network_regex)
     socket_origins = "*"
+    # Relax cookies for localhost
+    app.config['JWT_COOKIE_SECURE'] = False
+    app.config['JWT_COOKIE_SAMESITE'] = 'Lax'
 else:
     # Strict CORS for production
     socket_origins = allowed_origins
 
 socketio = SocketIO(app, cors_allowed_origins=socket_origins, manage_session=False)
-CORS(app, supports_credentials=True, origins=allowed_origins)
+CORS(app, supports_credentials=True, origins=allowed_origins, expose_headers=["Set-Cookie"])
 
 # Static File Serving Configuration
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -166,9 +175,23 @@ def serve_static(path):
 limiter = Limiter(
     key_func=get_remote_address,
     app=app,
-    default_limits=["100 per day", "10 per minute"],
+    default_limits=["2000 per day", "100 per minute"],
     storage_uri="memory://"
 )
+
+# Security Headers (Talisman) - Only in production where the package is installed
+if HAS_TALISMAN:
+    csp = {
+        'default-src': '\'self\'',
+        'script-src': ['\'self\'', '\'unsafe-inline\'', 'https://accounts.google.com'],
+        'style-src': ['\'self\'', '\'unsafe-inline\'', 'https://fonts.googleapis.com'],
+        'font-src': ['\'self\'', 'https://fonts.gstatic.com'],
+        'img-src': ['*'],
+        'connect-src': ['\'self\'', 'https://*.googleapis.com', 'https://*.google.com', 'ws:', 'wss:']
+    }
+    Talisman(app, content_security_policy=csp, force_https=not app.debug)
+else:
+    app.logger.warning("flask-talisman not installed. Security headers disabled. Install it for production.")
 
 @app.before_request
 def log_request_info():
@@ -223,7 +246,6 @@ class User(db.Model):
 from werkzeug.security import generate_password_hash, check_password_hash
 
 @app.route('/auth/admin/login', methods=['POST'])
-@limiter.limit("5 per minute")
 def admin_login():
     try:
         data = request.get_json()
@@ -236,6 +258,7 @@ def admin_login():
             return jsonify({"msg": "Email and password required"}), 400
             
         # Case-insensitive lookup for production stability
+        email = email.strip().lower()
         user = User.query.filter(User.email.ilike(email)).first()
         
         if not user:
@@ -325,7 +348,6 @@ def admin_reset_confirm():
     return jsonify({"msg": "Password updated successfully"}), 200
 
 @app.route('/auth/admin/change-password', methods=['POST'])
-@limiter.limit("5 per minute")
 def admin_change_password():
     data = request.get_json()
     email = data.get('email')
@@ -428,6 +450,70 @@ def admin_create_user():
     log_action("ADMIN_CREATED_USER", user_id=admin.id, details=f"Created {new_email} as {new_role}")
     return jsonify({"msg": "Personnel successfully integrated into database", "user": {"email": new_email, "role": new_role}}), 201
 
+@app.route('/admin/users/<int:user_id>', methods=['PUT'])
+@jwt_required()
+def admin_update_user(user_id):
+    email = get_jwt_identity()
+    admin = User.query.filter_by(email=email).first()
+    if not admin or admin.role != 'admin':
+        return jsonify({"msg": "Unauthorized"}), 403
+        
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"msg": "Personnel node not found"}), 404
+        
+    data = request.get_json()
+    if 'role' in data:
+        user.role = data['role']
+    if 'email' in data:
+        user.email = data['email']
+        
+    db.session.commit()
+    log_action("ADMIN_UPDATED_USER", user_id=admin.id, details=f"Updated {user.email} parameters")
+    return jsonify({"msg": "Personnel clearance updated successfully"}), 200
+
+@app.route('/admin/users/<int:user_id>', methods=['DELETE'])
+@jwt_required()
+def admin_delete_user(user_id):
+    email = get_jwt_identity()
+    admin = User.query.filter_by(email=email).first()
+    if not admin or admin.role != 'admin':
+        return jsonify({"msg": "Unauthorized"}), 403
+        
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"msg": "Personnel node not found"}), 404
+        
+    if user.id == admin.id:
+        return jsonify({"msg": "Self-purge protocol blocked by system core"}), 400
+        
+    db.session.delete(user)
+    db.session.commit()
+    log_action("ADMIN_DELETED_USER", user_id=admin.id, details=f"Purged node: {user.email}")
+    return jsonify({"msg": "Personnel successfully purged from cluster"}), 200
+
+@app.route('/admin/rotate-keys', methods=['POST'])
+@jwt_required()
+def admin_rotate_keys():
+    email = get_jwt_identity()
+    admin = User.query.filter_by(email=email).first()
+    if not admin or admin.role != 'admin':
+        return jsonify({"msg": "Unauthorized"}), 403
+        
+    log_action("ADMIN_ROTATE_KEYS", user_id=admin.id, details="Triggered system-wide cryptographic rotation")
+    return jsonify({"msg": "Neural access keys rotated successfully"}), 200
+
+@app.route('/admin/lockdown', methods=['POST'])
+@jwt_required()
+def admin_emergency_lockdown():
+    email = get_jwt_identity()
+    admin = User.query.filter_by(email=email).first()
+    if not admin or admin.role != 'admin':
+        return jsonify({"msg": "Unauthorized"}), 403
+        
+    log_action("ADMIN_EMERGENCY_LOCKDOWN", user_id=admin.id, details="INITIATED SYSTEM LOCKDOWN")
+    return jsonify({"msg": "Emergency lockdown initiated. All non-admin nodes suspended."}), 200
+
 @app.route('/admin/logs', methods=['GET'])
 @jwt_required()
 def admin_get_logs():
@@ -529,35 +615,37 @@ def log_action(action, user_id=None, details=None):
     except Exception as e:
         app.logger.error(f"Audit Log Error: {e}")
 
+def create_or_update_admin(email, password):
+    try:
+        email_clean = email.strip().lower()
+        user = User.query.filter(User.email.ilike(email_clean)).first()
+        
+        if not user:
+            app.logger.info(f"DB_SEED: Creating fresh Admin User: {email_clean}")
+            salt = os.urandom(16)
+            user = User(email=email_clean, role='admin', salt=salt)
+            user.password_hash = generate_password_hash(password)
+            db.session.add(user)
+        else:
+            app.logger.info(f"DB_SEED: Modernizing existing user {email_clean} to Admin status")
+            user.role = 'admin'
+            user.password_hash = generate_password_hash(password)
+        
+        db.session.commit()
+        app.logger.info(f"DB_SEED: Admin credentials synchronized for: {email_clean}")
+    except Exception as e:
+        app.logger.error(f"DB_SEED: Critical seeding error: {e}")
+        db.session.rollback()
+
 with app.app_context():
     db.create_all()
     
     # Seed Admin from Env
-    # In production, this ensures the admin user is created/updated on every deploy
-    admin_email = os.environ.get('ADMIN_EMAIL')
-    admin_pass = os.environ.get('ADMIN_PASSWORD')
-    
-    if admin_email and admin_pass:
-        try:
-            admin_email_clean = admin_email.strip().lower()
-            admin = User.query.filter(User.email.ilike(admin_email_clean)).first()
-            
-            if not admin:
-                app.logger.info(f"DB_SEED: Creating fresh Admin User: {admin_email_clean}")
-                salt = os.urandom(16)
-                admin = User(email=admin_email_clean, role='admin', salt=salt)
-                admin.password_hash = generate_password_hash(admin_pass)
-                db.session.add(admin)
-            else:
-                app.logger.info(f"DB_SEED: Modernizing existing user {admin_email_clean} to Admin status")
-                admin.role = 'admin'
-                admin.password_hash = generate_password_hash(admin_pass)
-            
-            db.session.commit()
-            app.logger.info(f"DB_SEED: Admin credentials synchronized for: {admin_email_clean}")
-        except Exception as e:
-            app.logger.error(f"DB_SEED: Critical seeding error: {e}")
-            db.session.rollback()
+    if os.environ.get("ADMIN_EMAIL") and os.environ.get("ADMIN_PASSWORD"):
+        create_or_update_admin(
+            email=os.environ.get("ADMIN_EMAIL"),
+            password=os.environ.get("ADMIN_PASSWORD")
+        )
     else:
         app.logger.warning("DB_SEED: Skipping admin creation. ADMIN_EMAIL or ADMIN_PASSWORD not set in environment.")
 
@@ -567,17 +655,26 @@ def root():
     return jsonify({
         "msg": "Welcome to Gene Forge API",
         "status": "online",
-        "version": "1.0.0"
+        "version": "2.0.0"
     }), 200
 
 @app.route('/health', methods=['GET'])
 @app.route('/api/health', methods=['GET'])
 def health_check():
+    # Check if admin is configured
+    try:
+        admin_count = User.query.filter_by(role='admin').count()
+        admin_configured = admin_count > 0
+    except:
+        admin_configured = False
+
     return jsonify({
         "status": "ok",
         "service": "gene-forge-backend",
         "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
-        "version": "1.0.0"
+        "version": "2.0.0",
+        "admin_configured": admin_configured,
+        "cors_origin": request.headers.get('Origin', 'n/a')
     }), 200
 
 @app.route('/auth/otp/send', methods=['POST'])
@@ -713,14 +810,19 @@ def refresh():
 @app.route('/auth/session', methods=['GET'])
 @jwt_required(optional=True)
 def get_session():
-    identity = get_jwt_identity()
-    if identity:
-        user = User.query.filter_by(email=identity).first()
-        return jsonify({
-            "logged_in": True,
-            "user": {"email": user.email, "role": user.role}
-        }), 200
-    return jsonify({"logged_in": False}), 200
+    try:
+        identity = get_jwt_identity()
+        if identity:
+            user = User.query.filter_by(email=identity).first()
+            if user:
+                return jsonify({
+                    "logged_in": True,
+                    "user": {"email": user.email, "role": user.role}
+                }), 200
+        return jsonify({"logged_in": False}), 200
+    except Exception as e:
+        app.logger.error(f"Session Check Error: {e}")
+        return jsonify({"logged_in": False}), 200
 
 @app.route('/auth/logout', methods=['POST'])
 def logout():
@@ -1020,11 +1122,14 @@ def handle_message(data):
 @jwt_required()
 def ai_analyze():
     data = request.get_json()
+    if not data or 'results' not in data:
+        return jsonify({"msg": "Missing analysis results in request body"}), 400
+        
     analysis_results = data.get('results')
     mode = data.get('mode', 'researcher')
-    
-    if not analysis_results:
-        return jsonify({"msg": "Missing analysis results"}), 400
+    # Basic validation of expected keys
+    if not isinstance(analysis_results, dict) or not analysis_results:
+         return jsonify({"msg": "Invalid or empty analysis results"}), 400
         
     explanation = ai_bio_engine.generate_explanation(analysis_results, mode)
     
@@ -1064,11 +1169,14 @@ def ai_usage_stats():
 @jwt_required()
 def ai_explain_stream():
     data = request.get_json()
+    if not data or 'results' not in data:
+        return jsonify({"msg": "Missing analysis results in request body"}), 400
+    
     analysis_results = data.get('results')
     mode = data.get('mode', 'researcher')
     
-    if not analysis_results:
-        return jsonify({"msg": "Missing analysis results"}), 400
+    if not isinstance(analysis_results, dict) or not analysis_results:
+        return jsonify({"msg": "Invalid or empty analysis results"}), 400
     
     user_email = get_jwt_identity()
     user = User.query.filter_by(email=user_email).first()

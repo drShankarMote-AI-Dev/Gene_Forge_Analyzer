@@ -31,9 +31,9 @@ services:
       - key: JWT_SECRET_KEY
         generateValue: true
       - key: FRONTEND_URL
-        value: https://gene-forge-frontend.onrender.com
+        value: https://gene-forge-analyzer.vercel.app
       - key: ALLOWED_ORIGINS
-        value: https://gene-forge-frontend.onrender.com,https://gene-forge-analyzer.vercel.app
+        value: https://gene-forge-analyzer.vercel.app,https://gene-forge-analyzer-shankar.vercel.app
       - key: JWT_COOKIE_SECURE
         value: True
       - key: JWT_COOKIE_SAMESITE
@@ -45,7 +45,7 @@ services:
       - key: ADMIN_EMAIL
         placeholder: "admin@geneforge.com"
       - key: ADMIN_PASSWORD
-        generateValue: true
+        sync: false
       - key: OPENAI_API_KEY
         sync: false
       - key: GEMINI_API_KEY

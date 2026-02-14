@@ -1,9 +1,11 @@
-
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+// Static imports removed for performance optimization.
+// Using dynamic imports within generatePDFReport and generateCompleteReport.
 
 export const generatePDFReport = async (reportTitle: string, elementId: string) => {
   try {
+    const { default: jsPDF } = await import('jspdf');
+    const { default: html2canvas } = await import('html2canvas');
+
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pageWidth = pdf.internal.pageSize.width;
     const pageHeight = pdf.internal.pageSize.height;
@@ -68,6 +70,9 @@ export const generatePDFReport = async (reportTitle: string, elementId: string) 
 
 export const generateCompleteReport = async (metadata?: { sequenceLength: number, title?: string }) => {
   try {
+    const { default: jsPDF } = await import('jspdf');
+    const { default: html2canvas } = await import('html2canvas');
+
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pageWidth = pdf.internal.pageSize.width;
     const pageHeight = pdf.internal.pageSize.height;
@@ -203,7 +208,7 @@ export const generateCompleteReport = async (metadata?: { sequenceLength: number
     }
 
     pdf.save(`GeneForge_Analysis_${new Date().toISOString().split('T')[0]}.pdf`);
-    
+
     return true;
   } catch (error) {
     console.error('Error generating enhanced report:', error);

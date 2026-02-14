@@ -18,27 +18,36 @@ import {
     Database,
     Lock
 } from 'lucide-react';
-import SequenceUploader from '@/components/SequenceUploader';
-import BaseCountAnalysis from '@/components/BaseCountAnalysis';
-import ReverseComplementDisplay from '@/components/ReverseComplementDisplay';
-import AminoAcidTranslation from '@/components/AminoAcidTranslation';
-import ReadingFrames from '@/components/ReadingFrames';
-import SNPDetection from '@/components/SNPDetection';
-import MotifSearch from '@/components/MotifSearch';
-import RestrictionSites from '@/components/RestrictionSites';
-import GCContentAnalysis from '@/components/GCContentAnalysis';
-import CRISPRFinder from '@/components/CRISPRFinder';
-import PrimerDesigner from '@/components/PrimerDesigner';
 import { countBases, reverseComplement, calculateGlobalGCContent } from '@/utils/dnaUtils';
 import { generatePDFReport, generateCompleteReport } from '@/utils/reportUtils';
 import { toast } from '@/components/ui/use-toast';
-import ProjectManager from '@/components/ProjectManager';
-import CollaborativeChat from '@/components/CollaborativeChat';
-import ScreenShare from '@/components/ScreenShare';
-import AIAssistant from '@/components/AIAssistant';
-import ComplianceOverlay from '@/components/ComplianceOverlay';
 import { useAuth } from '../hooks/useAuth';
 import { API_BASE_URL } from '@/utils/api';
+
+// Lazy load tool components
+const SequenceUploader = React.lazy(() => import('@/components/SequenceUploader'));
+const BaseCountAnalysis = React.lazy(() => import('@/components/BaseCountAnalysis'));
+const ReverseComplementDisplay = React.lazy(() => import('@/components/ReverseComplementDisplay'));
+const AminoAcidTranslation = React.lazy(() => import('@/components/AminoAcidTranslation'));
+const ReadingFrames = React.lazy(() => import('@/components/ReadingFrames'));
+const SNPDetection = React.lazy(() => import('@/components/SNPDetection'));
+const MotifSearch = React.lazy(() => import('@/components/MotifSearch'));
+const RestrictionSites = React.lazy(() => import('@/components/RestrictionSites'));
+const GCContentAnalysis = React.lazy(() => import('@/components/GCContentAnalysis'));
+const CRISPRFinder = React.lazy(() => import('@/components/CRISPRFinder'));
+const PrimerDesigner = React.lazy(() => import('@/components/PrimerDesigner'));
+const ProjectManager = React.lazy(() => import('@/components/ProjectManager'));
+const CollaborativeChat = React.lazy(() => import('@/components/CollaborativeChat'));
+const ScreenShare = React.lazy(() => import('@/components/ScreenShare'));
+const AIAssistant = React.lazy(() => import('@/components/AIAssistant'));
+const ComplianceOverlay = React.lazy(() => import('@/components/ComplianceOverlay'));
+
+const ToolLoader = () => (
+    <div className="p-8 flex flex-col items-center justify-center space-y-4 glass rounded-3xl animate-pulse">
+        <div className="h-8 w-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+        <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Mapping Genomic Sequence...</span>
+    </div>
+);
 
 interface BaseCount {
     A: number;
@@ -142,16 +151,24 @@ const Index = () => {
 
                 {/* LEFT SIDEBAR */}
                 <div className="lg:col-span-4 space-y-8">
-                    <SequenceUploader onSequenceSubmit={handleSequenceSubmit} />
-
-                    {isAuthenticated && <ScreenShare />}
+                    <React.Suspense fallback={<ToolLoader />}>
+                        <SequenceUploader onSequenceSubmit={handleSequenceSubmit} />
+                    </React.Suspense>
 
                     {isAuthenticated && (
-                        <ProjectManager
-                            onLoadAnalysis={handleLoadAnalysis}
-                            currentSequence={sequence}
-                            currentResults={{ baseCount }}
-                        />
+                        <React.Suspense fallback={<ToolLoader />}>
+                            <ScreenShare />
+                        </React.Suspense>
+                    )}
+
+                    {isAuthenticated && (
+                        <React.Suspense fallback={<ToolLoader />}>
+                            <ProjectManager
+                                onLoadAnalysis={handleLoadAnalysis}
+                                currentSequence={sequence}
+                                currentResults={{ baseCount }}
+                            />
+                        </React.Suspense>
                     )}
 
                     <Card className="glass-card border-none shadow-2xl overflow-hidden group">
@@ -372,14 +389,16 @@ const Index = () => {
 
                     {isAuthenticated && (
                         <div className="animate-in fade-in slide-in-from-top-4 duration-500">
-                            <AIAssistant
-                                analysisData={{
-                                    sequence: sequence,
-                                    base_counts: baseCount,
-                                    gc_content: parseFloat(calculateGlobalGCContent(sequence).toFixed(2)),
-                                    crispr_guides: [] // Guides are handled in sub-components, summarized here
-                                }}
-                            />
+                            <React.Suspense fallback={<ToolLoader />}>
+                                <AIAssistant
+                                    analysisData={{
+                                        sequence: sequence,
+                                        base_counts: baseCount,
+                                        gc_content: parseFloat(calculateGlobalGCContent(sequence).toFixed(2)),
+                                        crispr_guides: [] // Guides are handled in sub-components, summarized here
+                                    }}
+                                />
+                            </React.Suspense>
                         </div>
                     )}
 
@@ -403,11 +422,15 @@ const Index = () => {
                                     </TabsList>
 
                                     <TabsContent value="statistics" id="base-count-section">
-                                        <BaseCountAnalysis baseCount={baseCount || { A: 0, T: 0, G: 0, C: 0 }} />
+                                        <React.Suspense fallback={<ToolLoader />}>
+                                            <BaseCountAnalysis baseCount={baseCount || { A: 0, T: 0, G: 0, C: 0 }} />
+                                        </React.Suspense>
                                     </TabsContent>
 
                                     <TabsContent value="orientation" id="reverse-complement-section">
-                                        <ReverseComplementDisplay originalSequence={sequence} reverseComplement={reverseComplement(sequence)} />
+                                        <React.Suspense fallback={<ToolLoader />}>
+                                            <ReverseComplementDisplay originalSequence={sequence} reverseComplement={reverseComplement(sequence)} />
+                                        </React.Suspense>
                                     </TabsContent>
 
                                     <TabsContent value="alignment" className="space-y-8">
@@ -426,35 +449,51 @@ const Index = () => {
 
                         {activeTab === 'advanced' && (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-top-4 duration-500">
-                                <div id="amino-acid-section row-span-2">
-                                    <AminoAcidTranslation sequence={sequence} />
-                                </div>
-                                <div id="reading-frames-section">
-                                    <ReadingFrames sequence={sequence} />
-                                </div>
-                                <div id="snp-detection-section">
-                                    <SNPDetection referenceSequence={sequence} />
-                                </div>
+                                <React.Suspense fallback={<ToolLoader />}>
+                                    <div id="amino-acid-section row-span-2">
+                                        <AminoAcidTranslation sequence={sequence} />
+                                    </div>
+                                </React.Suspense>
+                                <React.Suspense fallback={<ToolLoader />}>
+                                    <div id="reading-frames-section">
+                                        <ReadingFrames sequence={sequence} />
+                                    </div>
+                                </React.Suspense>
+                                <React.Suspense fallback={<ToolLoader />}>
+                                    <div id="snp-detection-section">
+                                        <SNPDetection referenceSequence={sequence} />
+                                    </div>
+                                </React.Suspense>
                             </div>
                         )}
 
                         {activeTab === 'applied' && (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-top-4 duration-500">
-                                <div id="motif-search-section">
-                                    <MotifSearch sequence={sequence} />
-                                </div>
-                                <div id="restriction-sites-section">
-                                    <RestrictionSites sequence={sequence} />
-                                </div>
-                                <div id="gc-content-report">
-                                    <GCContentAnalysis sequence={sequence} />
-                                </div>
-                                <div id="crispr-guides-section">
-                                    <CRISPRFinder sequence={sequence} />
-                                </div>
-                                <div id="primer-design-section" className="md:col-span-2">
-                                    <PrimerDesigner sequence={sequence} />
-                                </div>
+                                <React.Suspense fallback={<ToolLoader />}>
+                                    <div id="motif-search-section">
+                                        <MotifSearch sequence={sequence} />
+                                    </div>
+                                </React.Suspense>
+                                <React.Suspense fallback={<ToolLoader />}>
+                                    <div id="restriction-sites-section">
+                                        <RestrictionSites sequence={sequence} />
+                                    </div>
+                                </React.Suspense>
+                                <React.Suspense fallback={<ToolLoader />}>
+                                    <div id="gc-content-report">
+                                        <GCContentAnalysis sequence={sequence} />
+                                    </div>
+                                </React.Suspense>
+                                <React.Suspense fallback={<ToolLoader />}>
+                                    <div id="crispr-guides-section">
+                                        <CRISPRFinder sequence={sequence} />
+                                    </div>
+                                </React.Suspense>
+                                <React.Suspense fallback={<ToolLoader />}>
+                                    <div id="primer-design-section" className="md:col-span-2">
+                                        <PrimerDesigner sequence={sequence} />
+                                    </div>
+                                </React.Suspense>
                             </div>
                         )}
 
@@ -487,7 +526,7 @@ const Index = () => {
                         ))}
                     </div>
                     <p className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/60 flex items-center gap-3">
-                        GENEFORGE RESEARCH FOUNDATION • {currentYear} • v4.0.2
+                        GENEFORGE RESEARCH FOUNDATION • {currentYear} • v{import.meta.env.VITE_VERSION || '2.0.0'}
                         <Sparkles className="h-3 w-3 text-primary animate-pulse" />
                     </p>
                     <div
@@ -500,15 +539,19 @@ const Index = () => {
             </footer>
             {/* SECURE COLLABORATION FLOATER */}
             {isAuthenticated && (
-                <CollaborativeChat
-                    currentAnalysisContext={{
-                        title: `Analysis - ${new Date().toLocaleDateString()}`,
-                        sequence: sequence?.substring(0, 100) + (sequence?.length > 100 ? '...' : ''),
-                        metrics: baseCount
-                    }}
-                />
+                <React.Suspense fallback={null}>
+                    <CollaborativeChat
+                        currentAnalysisContext={{
+                            title: `Analysis - ${new Date().toLocaleDateString()}`,
+                            sequence: sequence?.substring(0, 100) + (sequence?.length > 100 ? '...' : ''),
+                            metrics: baseCount
+                        }}
+                    />
+                </React.Suspense>
             )}
-            <ComplianceOverlay />
+            <React.Suspense fallback={null}>
+                <ComplianceOverlay />
+            </React.Suspense>
         </div>
     );
 };

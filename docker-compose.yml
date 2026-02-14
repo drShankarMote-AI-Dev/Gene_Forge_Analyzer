@@ -1,73 +1,171 @@
+# ================================
+# Docker Compose Configuration
+# Gene Forge Analyzer v2.0.0
+# ================================
+
 version: '3.9'
 
 services:
+  # ============================================
   # Backend Service - Flask API
+  # ============================================
   backend:
     build:
       context: ./apps/backend
       dockerfile: Dockerfile
+      args:
+        - BUILD_DATE=${BUILD_DATE:-2026-02-13}
+        - VERSION=2.0.0
+    image: geneforge-backend:2.0.0
     container_name: geneforge-backend
     restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+
     environment:
-      - DATABASE_URL=${DATABASE_URL:-sqlite:///geneforge.db}
-      - SECRET_KEY=${SECRET_KEY:-dev-secret-key}
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-jwt-dev-secret}
+      # Database Configuration
+      - DATABASE_URL=${DATABASE_URL:-postgresql://geneforge:geneforge@db:5432/geneforge}
+
+      # Security Keys
+      - SECRET_KEY=${SECRET_KEY:-dev-secret-key-change-in-production}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-jwt-dev-secret-change-in-production}
+
+      # CORS Configuration
       - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
-      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173,http://localhost:80}
+
+      # Admin Credentials
       - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@geneforge.com}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
-      - NODE_ENV=${NODE_ENV:-development}
-      - FLASK_ENV=${FLASK_ENV:-development}
+
+      # Environment
+      - NODE_ENV=${NODE_ENV:-production}
+      - FLASK_ENV=${FLASK_ENV:-production}
+      - PYTHONUNBUFFERED=1
+
+      # AI Configuration (Optional)
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+
     ports:
-      - "5000:5000"
+      - "${BACKEND_PORT:-5000}:5000"
+
     volumes:
-      - ./apps/backend:/app
       - backend-data:/app/instance
+      - backend-logs:/app/logs
+
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:5000/health" ]
-      interval: 10s
+      interval: 15s
       timeout: 5s
       retries: 5
-      start_period: 20s
+      start_period: 30s
+
     deploy:
       resources:
         limits:
-          cpus: '0.50'
-          memory: 512M
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
     networks:
       - geneforge-network
 
+  # ============================================
+  # Database Service - PostgreSQL
+  # ============================================
+  db:
+    image: postgres:15-alpine
+    container_name: geneforge-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=geneforge
+      - POSTGRES_PASSWORD=geneforge
+      - POSTGRES_DB=geneforge
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U geneforge" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - geneforge-network
+
+  # ============================================
   # Frontend Service - React/Vite with Nginx
+  # ============================================
   frontend:
     build:
       context: ./apps/frontend
       dockerfile: Dockerfile
+      args:
+        - BUILD_DATE=${BUILD_DATE:-2026-02-13}
+        - VERSION=2.0.0
+    image: geneforge-frontend:2.0.0
     container_name: geneforge-frontend
     restart: unless-stopped
+
     environment:
-      - VITE_API_URL=http://localhost:5000/api
+      - VITE_API_URL=${VITE_API_URL:-http://localhost:5000/api}
+      - VITE_WS_URL=${VITE_WS_URL:-ws://localhost:5000}
+
     ports:
-      - "3000:80"
+      - "${FRONTEND_PORT:-3000}:80"
+
     depends_on:
       backend:
         condition: service_healthy
+
     healthcheck:
-      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/" ]
-      interval: 10s
+      test: [ "CMD", "curl", "-f", "http://localhost/" ]
+      interval: 15s
       timeout: 5s
       retries: 3
+      start_period: 10s
+
     deploy:
       resources:
         limits:
-          cpus: '0.25'
-          memory: 256M
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+
     networks:
       - geneforge-network
 
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "3"
+
+# ============================================
+# Volumes
+# ============================================
 volumes:
   backend-data:
     driver: local
+    name: geneforge-backend-data
+  backend-logs:
+    driver: local
+    name: geneforge-backend-logs
+  postgres-data:
+    driver: local
+    name: geneforge-postgres-data
 
+# ============================================
+# Networks
+# ============================================
 networks:
   geneforge-network:
     driver: bridge
+    name: geneforge-network
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
