@@ -18,14 +18,24 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
         ? endpoint
         : `${API_BASE_URL}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
 
+    // Hybrid Auth: Check for token in localStorage (fallback for cross-domain cookie blocking)
+    const token = localStorage.getItem('access_token');
+
+    const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+        ...options.headers,
+    };
+
+    if (token) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (headers as any)['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(url, {
         ...options,
         // Ensure credentials (cookies) are sent for cross-domain requests in production
         credentials: 'include',
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers,
-        },
+        headers,
     });
 
     if (!response.ok) {

@@ -93,7 +93,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # JWT Configuration
 app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'jwt-dev-secret-change-in-prod')
-app.config['JWT_TOKEN_LOCATION'] = ['cookies']
+app.config['JWT_TOKEN_LOCATION'] = ['headers', 'cookies']
 app.config['JWT_ACCESS_COOKIE_PATH'] = '/'
 app.config['JWT_REFRESH_COOKIE_PATH'] = '/auth/refresh'
 app.config['JWT_COOKIE_CSRF_PROTECT'] = False
@@ -282,7 +282,13 @@ def admin_login():
         if check_password_hash(user.password_hash, password):
             access_token = create_access_token(identity=email)
             refresh_token = create_refresh_token(identity=email)
-            resp = jsonify({"msg": "Admin Access Granted", "user": {"email": email, "role": "admin"}})
+            # Return tokens in body for cross-domain fallback
+            resp = jsonify({
+                "msg": "Admin Access Granted",
+                "user": {"email": email, "role": "admin"},
+                "access_token": access_token,
+                "refresh_token": refresh_token
+            })
             set_access_cookies(resp, access_token)
             set_refresh_cookies(resp, refresh_token)
             log_action("ADMIN_LOGIN_SUCCESS", user_id=user.id, details="Password Auth")
@@ -796,7 +802,12 @@ def verify_otp():
     access_token = create_access_token(identity=email)
     refresh_token = create_refresh_token(identity=email)
 
-    resp = jsonify({"msg": "Login successful", "user": {"email": email, "role": user.role}})
+    resp = jsonify({
+        "msg": "Login successful", 
+        "user": {"email": email, "role": user.role},
+        "access_token": access_token,
+        "refresh_token": refresh_token
+    })
     set_access_cookies(resp, access_token)
     set_refresh_cookies(resp, refresh_token)
     log_action("LOGIN_SUCCESS", user_id=user.id, details="OTP Authentication")
@@ -808,7 +819,10 @@ def verify_otp():
 def refresh():
     identity = get_jwt_identity()
     access_token = create_access_token(identity=identity)
-    resp = jsonify({"msg": "Token refreshed"})
+    resp = jsonify({
+        "msg": "Token refreshed",
+        "access_token": access_token
+    })
     set_access_cookies(resp, access_token)
     return resp, 200
 
@@ -859,7 +873,12 @@ def google_verify_token():
         access_token = create_access_token(identity=email)
         refresh_token = create_refresh_token(identity=email)
         
-        resp = jsonify({"msg": "Login successful", "user": {"email": email, "role": user.role}})
+        resp = jsonify({
+            "msg": "Login successful", 
+            "user": {"email": email, "role": user.role},
+            "access_token": access_token,
+            "refresh_token": refresh_token
+        })
         set_access_cookies(resp, access_token)
         set_refresh_cookies(resp, refresh_token)
         log_action("LOGIN_SUCCESS", user_id=user.id, details="Google Token Verification")

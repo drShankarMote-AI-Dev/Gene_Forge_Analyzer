@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
 
-import { API_BASE_URL as API_URL } from '@/utils/api';
+import { API_BASE_URL as API_URL, apiFetch } from '@/utils/api';
 
 interface User {
     email: string;
@@ -31,12 +31,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         queryKey: ['session'],
         queryFn: async () => {
             try {
-                const response = await fetch(`${API_URL}/auth/session`, {
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                });
-                if (!response.ok) return { logged_in: false };
-                return await response.json();
+                // Use apiFetch to automatically include Authorization header from localStorage
+                return await apiFetch('/auth/session');
             } catch {
                 return { logged_in: false };
             }
@@ -124,7 +120,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             }
             return resp.json();
         },
-        onSuccess: () => {
+        onSuccess: (data: any) => {
+            if (data.access_token) {
+                localStorage.setItem('access_token', data.access_token);
+            }
             queryClient.invalidateQueries({ queryKey: ['session'] });
             toast({ title: "Login Successful", description: "Welcome back!" });
             navigate('/analysis');
@@ -146,6 +145,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             });
         },
         onSuccess: () => {
+            localStorage.removeItem('access_token');
             queryClient.setQueryData(['session'], { logged_in: false });
             toast({ title: "Logged Out", description: "You have been logged out safely." });
         }
@@ -165,7 +165,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             }
             return resp.json();
         },
-        onSuccess: () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        onSuccess: (data: any) => {
+            if (data.access_token) {
+                localStorage.setItem('access_token', data.access_token);
+            }
             queryClient.invalidateQueries({ queryKey: ['session'] });
             toast({ title: "Google Login Successful", description: "Identity verified. Welcome!" });
             navigate('/analysis');
@@ -224,6 +228,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         onSuccess: (data: any) => {
+            if (data.access_token) {
+                localStorage.setItem('access_token', data.access_token);
+            }
             queryClient.setQueryData(['session'], { logged_in: true, user: data.user });
             queryClient.invalidateQueries({ queryKey: ['session'] });
             toast({ title: "Admin Access Granted", description: "Secure session initialized." });
