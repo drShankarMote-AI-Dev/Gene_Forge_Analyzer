@@ -27,36 +27,54 @@ logger.info(f"AI Engine loading env from: {base_dir} and {backend_dir}")
 
 class AIBioEngine:
     def __init__(self):
-        """Initialize AI clients with production-grade validation."""
-        self.gateway_client = self._init_gateway()
-        self.openai_client = self._init_openai()
-        self.gemini_client = self._init_gemini()
+        """Initialize AI clients lazily."""
+        self.gateway_client = None
+        self.openai_client = None
+        self.gemini_client = None
+        self.gemini_model = "gemini-2.0-flash"
+
+    def _ensure_clients_initialized(self):
+        """Initialize clients if they haven't been initialized yet."""
+        if not self.gateway_client:
+            self.gateway_client = self._init_gateway()
+        if not self.openai_client:
+            self.openai_client = self._init_openai()
+        if not self.gemini_client:
+            self.gemini_client = self._init_gemini()
 
     def _init_gateway(self):
-        key = os.environ.get("AI_GATEWAY_API_KEY")
-        if key and "your-" not in key:
-            return OpenAI(api_key=key, base_url='https://ai-gateway.vercel.sh/v1')
+        try:
+            key = os.environ.get("AI_GATEWAY_API_KEY")
+            if key and "your-" not in key:
+                return OpenAI(api_key=key, base_url='https://ai-gateway.vercel.sh/v1')
+        except Exception as e:
+            logger.warning(f"Failed to init AI Gateway: {e}")
         return None
 
     def _init_openai(self):
-        key = os.environ.get("OPENAI_API_KEY")
-        if key and "your-" not in key:
-            return OpenAI(api_key=key)
+        try:
+            key = os.environ.get("OPENAI_API_KEY")
+            if key and "your-" not in key:
+                return OpenAI(api_key=key)
+        except Exception as e:
+            logger.error(f"Failed to init OpenAI: {e}")
         return None
 
     def _init_gemini(self):
-        key = os.environ.get("GEMINI_API_KEY")
-        self.gemini_model = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash")
-        if key and "your-" not in key and genai:
-            try:
-                # Use the new google.genai Client
+        try:
+            key = os.environ.get("GEMINI_API_KEY")
+            self.gemini_model = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash")
+            if key and "your-" not in key and genai:
                 return genai.Client(api_key=key)
-            except Exception as e:
-                logger.error(f"Failed to initialize Gemini: {e}")
+        except Exception as e:
+            logger.error(f"Failed to initialize Gemini: {e}")
         return None
 
     def generate_explanation(self, analysis_data, mode="researcher"):
         """Production-ready explanation generator with robust fallbacks."""
+        # Ensure clients are ready directly before use
+        self._ensure_clients_initialized()
+
         prompt = self._build_prompt(analysis_data, mode)
         
         # 1. Experimental Gateway
@@ -87,6 +105,7 @@ class AIBioEngine:
                 )
                 return response.choices[0].message.content
             except Exception as e:
+                # If authenticating failed earlier or fails now, we log it
                 logger.error(f"OpenAI failed: {e}")
 
         # 3. Gemini Fallback
@@ -101,6 +120,9 @@ class AIBioEngine:
 
     def generate_explanation_stream(self, analysis_data, mode="researcher"):
         """Streams bio-intelligence results with automatic model migration."""
+        # Ensure clients are ready directly before use
+        self._ensure_clients_initialized()
+
         prompt = self._build_prompt(analysis_data, mode)
 
         # Try OpenAI-compatible stream
@@ -128,7 +150,6 @@ class AIBioEngine:
         # Try Gemini stream
         if self.gemini_client:
             try:
-                print(f"DEBUG: Attempting Gemini {self.gemini_model} Stream...")
                 # Fallback to flash if pro fails, or just use flash as it's more widely available on free tier
                 stream = self.gemini_client.models.generate_content_stream(model=self.gemini_model, contents=prompt)
                 yield f"__MODEL_USED__:google-{self.gemini_model}\n"
@@ -137,9 +158,6 @@ class AIBioEngine:
                         yield chunk.text
                 return
             except Exception as e:
-                import traceback
-                traceback.print_exc()
-                print(f"DEBUG: Gemini Error: {e}")
                 logger.error(f"Gemini stream failed: {e}")
 
         yield "Critical: All neural pathways are obstructed. Intelligence link severed."
